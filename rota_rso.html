@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <title>Novo Relatório RSO</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com" rel="preconnect" />
+  <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700;800;900&amp;display=swap"
+    rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#1173d4",
+            "background-light": "#f6f7f8",
+            "background-dark": "#101922",
+          },
+          fontFamily: {
+            "display": ["Public Sans", "sans-serif"]
+          },
+          borderRadius: {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+        },
+      },
+    }
+  </script>
+  <style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      font-size: 24px;
+    }
+
+    /* Custom message popup */
+    #message-popup {
+      position: fixed;
+      top: 1.5rem;
+      right: 1.5rem;
+      padding: 1rem 1.5rem;
+      border-radius: 0.5rem;
+      color: white;
+      font-weight: 600;
+      z-index: 1000;
+      opacity: 0;
+      transform: translateX(100%);
+      transition: all 0.3s ease-in-out;
+    }
+
+    #message-popup.show {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  </style>
+</head>
+
+<body class="bg-background-light dark:bg-background-dark font-display">
+  <div class="relative flex min-h-screen w-full">
+    <!-- SideNavBar -->
+    <aside
+      class="flex flex-col w-64 bg-background-light dark:bg-background-dark border-r border-gray-200 dark:border-gray-800 p-4 sticky top-0 h-screen">
+      <div class="flex flex-col gap-4 flex-grow">
+        <div class="flex items-center gap-3">
+          <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10"
+            data-alt="User avatar for Sgt. Oliveira"
+            style='background-image: url("https://placehold.co/40x40/101922/f6f7f8?text=SO");' id="user-avatar"></div>
+          <div class="flex flex-col">
+            <h1 id="user-name" class="text-gray-900 dark:text-white text-base font-medium leading-normal"></h1>
+            <p class="text-gray-500 dark:text-gray-400 text-sm font-normal leading-normal">1º BPChq ROTA</p>
+          </div>
+        </div>
+        <nav class="flex flex-col gap-2 mt-4">
+          <a class="flex items-center gap-3 px-3 py-2 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
+            href="rota_dashboard.html"> <!-- Link to dashboard -->
+            <span class="material-symbols-outlined">dashboard</span>
+            <p class="text-sm font-medium leading-normal">Dashboard</p>
+          </a>
+          <a class="flex items-center gap-3 px-3 py-2 rounded-lg bg-primary text-white" href="#">
+            <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">add</span>
+            <p class="text-sm font-medium leading-normal">Novo RSO</p>
+          </a>
+          <a class="flex items-center gap-3 px-3 py-2 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
+            href="rota_relatorios.html">
+            <span class="material-symbols-outlined">description</span>
+            <p class="text-sm font-medium leading-normal">Relatórios</p>
+          </a>
+          <a class="flex items-center gap-3 px-3 py-2 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
+            href="#">
+            <span class="material-symbols-outlined">bar_chart</span>
+            <p class="text-sm font-medium leading-normal">Análises</p>
+          </a>
+          <a class="flex items-center gap-3 px-3 py-2 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
+            href="#">
+            <span class="material-symbols-outlined">settings</span>
+            <p class="text-sm font-medium leading-normal">Configurações</p>
+          </a>
+        </nav>
+      </div>
+      <div class="flex flex-col gap-2">
+        <a class="flex items-center gap-3 px-3 py-2 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
+          href="#">
+          <span class="material-symbols-outlined">help</span>
+          <p class="text-sm font-medium leading-normal">Ajuda</p>
+        </a>
+        <button id="logout-button"
+          class="flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-white text-sm font-bold leading-normal tracking-wide hover:bg-gray-300 dark:hover:bg-gray-700">
+          <span class="truncate">Sair</span>
+        </button>
+      </div>
+    </aside>
+    <!-- Main Content -->
+    <main class="flex-1 p-8">
+      <div class="max-w-4xl mx-auto">
+        <!-- PageHeading -->
+        <div class="mb-8">
+          <h1 class="text-gray-900 dark:text-white text-4xl font-black leading-tight tracking-[-0.033em]">Novo Relatório
+            RSO</h1>
+          <p class="text-gray-500 dark:text-gray-400 text-base font-normal leading-normal mt-2">
+            Preencha os detalhes abaixo para registrar um novo incidente operacional. Todos os campos marcados com * são
+            obrigatórios.
+          </p>
+        </div>
+
+        <!-- Form with ID -->
+        <form id="incident-form" class="flex flex-col gap-8">
+          <!-- Section: Officer & Patrol Details -->
+          <section>
+            <h2
+              class="text-gray-900 dark:text-white text-[22px] font-bold leading-tight tracking-[-0.015em] pb-3 border-b border-gray-200 dark:border-gray-800">
+              Detalhes do Policial &amp; Patrulha</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 pt-5">
+              <label class="flex flex-col">
+                <p class="text-gray-900 dark:text-white text-base font-medium leading-normal pb-2">
+                  Posto/Graduação do Policial Responsável*</p>
+                <select id="officer-rank" required
+                  class="form-select flex w-full resize-none overflow-hidden rounded-lg text-gray-900 dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 focus:border-primary h-11 placeholder:text-gray-400 dark:placeholder:text-gray-500 p-2 text-base font-normal leading-normal">
+                  <option value="">Selecionar Posto/Graduação</option>
+                  <option>Soldado QPPM de 2ª Classe</option>
+                  <option>Soldado QPPM de 1ª Classe</option>
+                  <option>Cabo QPPM</option>
+                  <option>3º Sargento QPPM</option>
+                  <option>2º Sargento QPPM</option>
+                  <option>1º Sargento QPPM</option>
+                  <option>Sub Tenente QPPM</option>
+                  <option>Aspirante a Oficial QPPM</option>
+                  <option>2º Tenente QOPM</option>
+                  <option>1º Tenente QOPM</option>
+                  <option>Capitão QOPM</option>
+                  <option>Major QOPM</option>
+                  <option>Tenente Coronel QOPM</option>
+                  <option>Coronel QOPM</option>
+                </select>
+              </label>
+              <div class="grid grid-cols-2 gap-4">
+                <label class="flex flex-col">
+                  <p class="text-gray-900 dark:text-white text-base font-medium leading-normal pb-2">
+                    Primeiro Nome*</p>
+                  <input id="officer-first-name" required
+                    class="form-input flex w-full resize-none overflow-hidden rounded-lg text-gray-900 dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 focus:border-primary h-11 placeholder:text-gray-400 dark:placeholder:text-gray-500 p-2 text-base font-normal leading-normal"
+                    placeholder="Primeiro Nome" value="" />
+                </label>
+                <label class="flex flex-col">
+                  <p class="text-gray-900 dark:text-white text-base font-medium leading-normal pb-2">
+                    Segundo Nome*</p>
+                  <input id="officer-last-name" required
+                    class="form-input flex w-full resize-none overflow-hidden rounded-lg text-gray-900 dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 focus:border-primary h-11 placeholder:text-gray-400 dark:placeholder:text-gray-500 p-2 text-base font-normal leading-normal"
+                    placeholder="Segundo Nome" value="" />
+                </label>
+              </div>
+              <label class="flex flex-col">
+                <p class="text-gray-900 dark:text-white text-base font-medium leading-normal pb-2">
+                  Área de Patrulha*</p>
+                <input id="patrol-area" required
+                  class="form-input flex w-full resize-none overflow-hidden rounded-lg text-gray-900 dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 focus:border-primary h-11 placeholder:text-gray-400 dark:placeholder:text-gray-500 p-2 text-base font-normal leading-normal"
+                  placeholder="ex: 1ª CIA, 2ª CIA, Cumprimento de OS" value="" />
+              </label>
+              <label class="flex flex-col">
+                <p class="text-gray-900 dark:text-white text-base font-medium leading-normal pb-2">
+                  Prefixo da Viatura*</p>
+                <input id="patrol-prefix" required
+                  class="form-input flex w-full resize-none overflow-hidden rounded-lg text-gray-900 dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 focus:border-primary h-11 placeholder:text-gray-400 dark:placeholder:text-gray-500 p-2 text-base font-normal leading-normal"
+                  placeholder="ex: 91000" value="" />
+              </label>
+              <label class="flex flex-col md:col-span-2">
+                <p class="text-gray-900 dark:text-white text-base font-medium leading-normal pb-2">Integrantes</p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <!-- IDs dos inputs de integrantes -->
+                  <input id="comandante"
+                    class="form-input flex w-full resize-none overflow-hidden rounded-lg text-gray-900 dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 focus:border-primary h-11 placeholder:text-gray-400 dark:placeholder:text-gray-500 p-2 text-base font-normal"
+                    placeholder="Nome do Comandante" />
+                  <input id="motorista"
+                    class="form-input flex w-full resize-none overflow-hidden rounded-lg text-gray-900 dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 focus:border-primary h-11 placeholder:text-gray-400 dark:placeholder:text-gray-500 p-2 text-base font-normal"
+                    placeholder="Nome do Motorista" />
+                  <input id="1-auxiliar"
+                    class="form-input flex w-full resize-none overflow-hidden rounded-lg text-gray-900 dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 focus:border-primary h-11 placeholder:text-gray-400 dark:placeholder:text-gray-500 p-2 text-base font-normal"
+                    placeholder="Nome do 1º Auxiliar" />
+                  <input id="2-auxiliar"
+                    class="form-input flex w-full resize-none overflow-hidden rounded-lg text-gray-900 dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 focus:border-primary h-11 placeholder:text-gray-400 dark:placeholder:text-gray-500 p-2 text-base font-normal"
+                    placeholder="Nome do 2º Auxiliar/Estagiário" />
+                </div>
+              </label>
+            </div>
+          </section>
+          <!-- Section: Incident Timeline & Evaluation -->
+          <section>
+            <h2
+              class="text-gray-900 dark:text-white text-[22px] font-bold leading-tight tracking-[-0.015em] pb-3 border-b border-gray-200 dark:border-gray-800">
+              Cronologia &amp; Avaliação da Patrulha</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 pt-5">
+              <label class="flex flex-col">
+                <p class="text-gray-900 dark:text-white text-base font-medium leading-normal pb-2">Horário de Início*
+                </p>
+                <input id="start-time" required
+                  class="form-input flex w-full resize-none overflow-hidden rounded-lg text-gray-900 dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 focus:border-primary h-11 placeholder:text-gray-400 dark:placeholder:text-gray-500 p-2 text-base font-normal leading-normal"
+                  type="datetime-local" />
+              </label>
+              <label class="flex flex-col">
+                <p class="text-gray-900 dark:text-white text-base font-medium leading-normal pb-2">Horário de Término*
+                </p>
+                <input id="end-time" required
+                  class="form-input flex w-full resize-none overflow-hidden rounded-lg text-gray-900 dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 focus:border-primary h-11 placeholder:text-gray-400 dark:placeholder:text-gray-500 p-2 text-base font-normal leading-normal"
+                  type="datetime-local" />
+              </label>
+              <label class="flex flex-col md:col-span-2">
+                <p class="text-gray-900 dark:text-white text-base font-medium leading-normal pb-2">
+                  Avaliação da Patrulha*</p>
+                <select id="evaluation" required
+                  class="form-select flex w-full resize-none overflow-hidden rounded-lg text-gray-900 dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 focus:border-primary h-11 placeholder:text-gray-400 dark:placeholder:text-gray-500 p-2 text-base font-normal leading-normal">
+                  <option value="">Selecionar Avaliação</option>
+                  <option>Excelente</option>
+                  <option>Boa</option>
+                  <option>Perigosa</option>
+                  <option>Intervenção</option>
+                </select>
+              </label>
+            </div>
+          </section>
+          <!-- Section: Incident Summary & Outcomes -->
+          <section>
+            <h2
+              class="text-gray-900 dark:text-white text-[22px] font-bold leading-tight tracking-[-0.015em] pb-3 border-b border-gray-200 dark:border-gray-800">
+              Resumo &amp; Resultados</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-4 pt-5">
+              <label class="flex flex-col">
+                <p class="text-gray-900 dark:text-white text-base font-medium leading-normal pb-2">
+                  Número de Ocorrências Atendidas*</p>
+                <input id="num-incidents" required
+                  class="form-input flex w-full resize-none overflow-hidden rounded-lg text-gray-900 dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 focus:border-primary h-11 placeholder:text-gray-400 dark:placeholder:text-gray-500 p-2 text-base font-normal leading-normal"
+                  min="0" placeholder="0" type="number" value="" />
+              </label>
+              <label class="flex flex-col">
+                <p class="text-gray-900 dark:text-white text-base font-medium leading-normal pb-2">
+                  Número de Detidos*</p>
+                <input id="num-detainees" required
+                  class="form-input flex w-full resize-none overflow-hidden rounded-lg text-gray-900 dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 focus:border-primary h-11 placeholder:text-gray-400 dark:placeholder:text-gray-500 p-2 text-base font-normal leading-normal"
+                  min="0" placeholder="0" type="number" value="" />
+              </label>
+              <label class="flex flex-col">
+                <p class="text-gray-900 dark:text-white text-base font-medium leading-normal pb-2">
+                  Mortes por intervenção*</p>
+                <input id="num-deaths" required
+                  class="form-input flex w-full resize-none overflow-hidden rounded-lg text-gray-900 dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 focus:border-primary h-11 placeholder:text-gray-400 dark:placeholder:text-gray-500 p-2 text-base font-normal leading-normal"
+                  min="0" placeholder="0" type="number" value="" />
+              </label>
+            </div>
+          </section>
+          <!-- Section: Seizures & Evidence -->
+          <section>
+            <h2
+              class="text-gray-900 dark:text-white text-[22px] font-bold leading-tight tracking-[-0.015em] pb-3 border-b border-gray-200 dark:border-gray-800">
+              Apreensões &amp; Evidências</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 pt-5">
+              <label class="flex flex-col">
+                <p class="text-gray-900 dark:text-white text-base font-medium leading-normal pb-2">
+                  Armas Apreendidas</p>
+                <input id="seized-firearms"
+                  class="form-input flex w-full resize-none overflow-hidden rounded-lg text-gray-900 dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 focus:border-primary h-11 placeholder:text-gray-400 dark:placeholder:text-gray-500 p-2 text-base font-normal"
+                  min="0" placeholder="Quantidade" type="number" />
+              </label>
+              <label class="flex flex-col">
+                <p class="text-gray-900 dark:text-white text-base font-medium leading-normal pb-2">
+                  Munições Apreendidas</p>
+                <input id="seized-ammo"
+                  class="form-input flex w-full resize-none overflow-hidden rounded-lg text-gray-900 dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 focus:border-primary h-11 placeholder:text-gray-400 dark:placeholder:text-gray-500 p-2 text-base font-normal"
+                  min="0" placeholder="Quantidade" type="number" />
+              </label>
+              <label class="flex flex-col">
+                <p class="text-gray-900 dark:text-white text-base font-medium leading-normal pb-2">
+                  Drogas Apreendidas</p>
+                <input id="seized-narcotics"
+                  class="form-input flex w-full resize-none overflow-hidden rounded-lg text-gray-900 dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 focus:border-primary h-11 placeholder:text-gray-400 dark:placeholder:text-gray-500 p-2 text-base font-normal"
+                  placeholder="ex: 5kg cocaina, 12kg moconha" />
+              </label>
+              <label class="flex flex-col">
+                <p class="text-gray-900 dark:text-white text-base font-medium leading-normal pb-2">Dinheiro Apreendido
+                </p>
+                <input id="seized-money"
+                  class="form-input flex w-full resize-none overflow-hidden rounded-lg text-gray-900 dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 focus:border-primary h-11 placeholder:text-gray-400 dark:placeholder:text-gray-500 p-2 text-base font-normal"
+                  placeholder="ex: R$ 10.000" />
+              </label>
+              <label class="flex flex-col">
+                <p class="text-gray-900 dark:text-white text-base font-medium leading-normal pb-2">Veículos Roubados
+                  Recuperados</p>
+                <input id="seized-vehicles"
+                  class="form-input flex w-full resize-none overflow-hidden rounded-lg text-gray-900 dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 focus:border-primary h-11 placeholder:text-gray-400 dark:placeholder:text-gray-500 p-2 text-base font-normal"
+                  min="0" placeholder="Quantidade" type="number" />
+              </label>
+              <label class="flex flex-col">
+                <p class="text-gray-900 dark:text-white text-base font-medium leading-normal pb-2">
+                  Outros</p>
+                <textarea id="seized-other"
+                  class="form-textarea flex w-full resize-y overflow-hidden rounded-lg text-gray-900 dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 focus:border-primary min-h-[80px] placeholder:text-gray-400 dark:placeholder:text-gray-500 p-2 text-base font-normal leading-normal"
+                  placeholder="ex: lockpick, colete, etc."></textarea>
+              </label>
+            </div>
+          </section>
+          <!-- Section: Concluding Remarks -->
+          <section>
+            <h2
+              class="text-gray-900 dark:text-white text-[22px] font-bold leading-tight tracking-[-0.015em] pb-3 border-b border-gray-200 dark:border-gray-800">
+              Considerações Finais</h2>
+            <div class="pt-5">
+              <label class="flex flex-col">
+                <p class="text-gray-900 dark:text-white text-base font-medium leading-normal pb-2">
+                  Observações*</p>
+                <textarea id="observations" required
+                  class="form-textarea flex w-full resize-y overflow-hidden rounded-lg text-gray-900 dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 focus:border-primary min-h-[150px] placeholder:text-gray-400 dark:placeholder:text-gray-500 p-2 text-base font-normal leading-normal"
+                  placeholder="Forneça uma análise detalhada da patrulha, incluindo ações tomadas, pessoas envolvidas e quaisquer outras informações relevantes."></textarea>
+              </label>
+            </div>
+          </section>
+        </form>
+        <!-- Form Actions -->
+        <div class="flex justify-end gap-4 mt-8 pt-6 border-t border-gray-200 dark:border-gray-800">
+          <button id="save-draft-button" type="button"
+            class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-11 px-6 bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-white text-sm font-bold leading-normal tracking-wide hover:bg-gray-300 dark:hover:bg-gray-700">
+            <span class="truncate">Salvar Rascunho</span>
+          </button>
+          <button id="submit-report-button" type="submit" form="incident-form"
+            class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-11 px-6 bg-primary text-white text-sm font-bold leading-normal tracking-wide hover:opacity-90">
+            <span class="truncate">Enviar Relatório</span>
+          </button>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Message Popup -->
+  <div id="message-popup"></div>
+
+  <!-- Firebase SDKs -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, collection, addDoc, setDoc, doc, serverTimestamp, } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    // --- Sua Configuração do Firebase ---
+    const firebaseConfig = {
+      apiKey: "",
+      authDomain: "",
+      projectId: "",
+      storageBucket: "",
+      messagingSenderId: "",
+      appId: "",
+      measurementId: ""
+    };
+    // -----------------------------------------
+
+    // Init Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    const appId = firebaseConfig.appId;
+    if (!appId) {
+      console.error("Firebase config is missing 'appId'!");
+      alert("CRITICAL ERROR: Firebase config is not set. App cannot connect to database.");
+    }
+
+    let currentUserId = null;
+    let currentUserEmail = null;
+
+    // --- Checagem de Autenticação ---
+    onAuthStateChanged(auth, (user) => {
+      if (user && !user.isAnonymous) {
+        console.log("User is logged in:", user.uid);
+        currentUserId = user.uid;
+        currentUserEmail = user.email;
+
+        // Atualiza info do usuário na sidebar
+        const userEmail = user.email || "user@rota.mil";
+        const idFuncional = userEmail.split('@')[0];
+        document.getElementById('user-name').textContent = `${idFuncional}`;
+        document.getElementById('user-avatar').style.backgroundImage = `url('https://placehold.co/40x40/101922/f6f7f8?text=${idFuncional.substring(0, 2).toUpperCase()}')`;
+
+      } else {
+        // Usuário deslogado
+        console.log("User is signed out, redirecting to login.");
+        window.location.href = 'index.html'; // Redireciona para login
+      }
+    });
+
+    // --- Logout ---
+    document.getElementById('logout-button').addEventListener('click', async () => {
+      try {
+        await signOut(auth);
+        console.log("User signed out.");
+        window.location.href = 'index.html'; // Redireciona para login
+      } catch (error) {
+        console.error("Sign out error:", error);
+      }
+    });
+
+    // --- Manipulação do Formulário ---
+    document.addEventListener("DOMContentLoaded", () => {
+      const incidentForm = document.getElementById('incident-form');
+      const submitButton = document.getElementById('submit-report-button');
+      const saveDraftButton = document.getElementById('save-draft-button');
+      const messagePopup = document.getElementById('message-popup');
+
+      if (!incidentForm || !submitButton || !saveDraftButton || !messagePopup) {
+        console.error("ERRO CRÍTICO: Elementos do formulário não encontrados. O script está sendo carregado corretamente?");
+        return;
+      }
+
+      // Função para mostrar popup
+      const showPopup = (message, isError = false) => {
+        messagePopup.textContent = message;
+        messagePopup.style.backgroundColor = isError ? '#dc2626' : '#22c55e'; // vermelho ou verde
+        messagePopup.classList.add('show');
+
+        setTimeout(() => {
+          messagePopup.classList.remove('show');
+        }, 3000);
+      };
+
+      // Função para pegar dados do form
+      const getFormData = () => {
+        const data = {};
+        data.officerRank = document.getElementById('officer-rank').value;
+        data.officerFirstName = document.getElementById('officer-first-name').value;
+        data.officerLastName = document.getElementById('officer-last-name').value;
+        data.patrolArea = document.getElementById('patrol-area').value;
+        data.patrolPrefix = document.getElementById('patrol-prefix').value;
+
+        // --- Usando os IDs corretos do HTML ---
+        data.teamCommander = document.getElementById('comandante').value;
+        data.teamDriver = document.getElementById('motorista').value;
+        data.teamAsst1 = document.getElementById('1-auxiliar').value;
+        data.teamAsst2 = document.getElementById('2-auxiliar').value;
+
+        data.startTime = document.getElementById('start-time').value;
+        data.endTime = document.getElementById('end-time').value;
+        data.evaluation = document.getElementById('evaluation').value;
+        data.numIncidents = document.getElementById('num-incidents').value;
+        data.numDetainees = document.getElementById('num-detainees').value;
+        data.numDeaths = document.getElementById('num-deaths').value;
+        data.seizedFirearms = document.getElementById('seized-firearms').value;
+        data.seizedAmmo = document.getElementById('seized-ammo').value;
+        data.seizedNarcotics = document.getElementById('seized-narcotics').value;
+        data.seizedMoney = document.getElementById('seized-money').value;
+        data.seizedVehicles = document.getElementById('seized-vehicles').value;
+        data.seizedOther = document.getElementById('seized-other').value;
+        data.observations = document.getElementById('observations').value;
+
+        // Metadados
+        data.submittedByUid = currentUserId;
+        data.submittedByEmail = currentUserEmail;
+        data.reportId = `R-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`;
+
+        return data;
+      };
+
+      // --- Enviar Relatório ---
+      incidentForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        console.log("Submit button clicked.");
+        if (!currentUserId || !appId) {
+          showPopup("Erro: Usuário não autenticado ou AppID faltando.", true);
+          return;
+        }
+
+        submitButton.disabled = true;
+        submitButton.textContent = "Enviando...";
+
+        try {
+          console.log("Coletando dados do formulário...");
+          const reportData = getFormData();
+          reportData.status = "submitted";
+          reportData.createdAt = serverTimestamp();
+
+          const reportsCollectionPath = `artifacts/${appId}/public/data/reports`;
+          console.log("Salvando em:", reportsCollectionPath);
+
+          const docRef = await addDoc(collection(db, reportsCollectionPath), reportData);
+
+          console.log("Report submitted with ID: ", docRef.id);
+          showPopup("Relatório enviado com sucesso!");
+          incidentForm.reset();
+
+        } catch (error) {
+          console.error("Erro ao enviar formulário: ", error);
+          showPopup("Erro ao enviar relatório. Verifique os dados e permissões.", true);
+
+        } finally {
+          submitButton.disabled = false;
+          submitButton.textContent = "Enviar Relatório";
+        }
+      });
+
+      // --- Salvar Rascunho ---
+      saveDraftButton.addEventListener('click', async () => {
+        console.log("Save draft clicked.");
+        if (!currentUserId || !appId) {
+          showPopup("Erro: Usuário não autenticado ou AppID faltando.", true);
+          return;
+        }
+
+        saveDraftButton.disabled = true;
+        saveDraftButton.textContent = "Salvando...";
+
+        try {
+          console.log("Coletando dados do formulário para rascunho...");
+          const reportData = getFormData();
+          reportData.status = "draft";
+          reportData.savedAt = serverTimestamp();
+
+          const draftDocPath = `artifacts/${appId}/users/${currentUserId}/draft_reports/${reportData.reportId}`;
+          console.log("Salvando rascunho em:", draftDocPath);
+
+          await setDoc(doc(db, draftDocPath), reportData);
+
+          console.log("Draft saved with ID: ", reportData.reportId);
+          showPopup("Rascunho salvo com sucesso!");
+
+        } catch (error) {
+          console.error("Erro ao salvar rascunho: ", error);
+          showPopup("Erro ao salvar rascunho.", true);
+
+        } finally {
+          saveDraftButton.disabled = false;
+          saveDraftButton.textContent = "Salvar Rascunho";
+        }
+      });
+    }); // <-- Fim do DOMContentLoaded
+  </script>
+</body>
+
+</html>
+}

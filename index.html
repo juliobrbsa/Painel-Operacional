@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <title>1° BPChq ROTA - Acesso ao Sistema</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;700&amp;display=swap"
+    rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#A92222",
+            "background-light": "#f6f7f8",
+            "background-dark": "#0D2033",
+          },
+          fontFamily: {
+            "display": ["Public Sans", "sans-serif"]
+          },
+          borderRadius: {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+        },
+      },
+    }
+  </script>
+  <style>
+    body {
+      font-family: 'Public Sans', sans-serif;
+    }
+  </style>
+</head>
+
+<body class="font-display">
+  <div
+    class="relative flex h-auto min-h-screen w-full flex-col bg-background-light dark:bg-background-dark dark group/design-root overflow-x-hidden">
+    <div class="layout-container flex h-full grow flex-col">
+      <div class="px-4 flex flex-1 justify-center items-center py-5">
+        <div class="layout-content-container flex flex-col w-full max-w-[420px] flex-1">
+          <div class="flex flex-col items-center justify-center p-4">
+            <div class="w-24 h-24 mb-6">
+              <img class="w-full h-full object-contain"
+                data-alt="Official logo of 1° Batalhão de Polícia de Choque ROTA"
+                src="BrasãoROTA.png" />
+            </div>
+            <h1 class="text-white tracking-light text-[28px] font-bold leading-tight text-center pb-1">
+              Acesso ao Sistema</h1>
+            <p class="text-gray-400 dark:text-gray-300 text-base font-normal leading-normal text-center">
+              Sistema de Gestão Operacional</p>
+          </div>
+
+          <!-- Add an ID to the form for the script -->
+          <form id="login-form" class="flex flex-col gap-4 p-4">
+            <label class="flex flex-col w-full">
+              <p class="text-white text-sm font-medium leading-normal pb-2">ID Funcional</p>
+              <div class="relative flex w-full items-center">
+                <span class="material-symbols-outlined absolute left-3 text-gray-400">person</span>
+                <!-- Add an ID to the input -->
+                <input id="id-funcional-input"
+                  class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-gray-700 bg-gray-800/50 dark:border-gray-600 dark:bg-gray-800 h-12 placeholder:text-gray-500 pl-10 pr-4 text-base font-normal leading-normal"
+                  placeholder="Digite seu ID funcional" value="" required />
+              </div>
+            </label>
+            <label class="flex flex-col w-full">
+              <p class="text-white text-sm font-medium leading-normal pb-2">Senha</p>
+              <div class="relative flex w-full items-center">
+                <span class="material-symbols-outlined absolute left-3 text-gray-400">lock</span>
+                <!-- Add an ID to the input -->
+                <input id="password-input"
+                  class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-gray-700 bg-gray-800/50 dark:border-gray-600 dark:bg-gray-800 h-12 placeholder:text-gray-500 pl-10 pr-10 text-base font-normal leading-normal"
+                  placeholder="Digite sua senha" type="password" value="" required />
+                <!-- Add an ID to the button -->
+                <button id="toggle-password-button" type="button" aria-label="Toggle password visibility"
+                  class="absolute right-3 text-gray-400 hover:text-white">
+                  <span class="material-symbols-outlined text-xl">visibility</span>
+                </button>
+              </div>
+            </label>
+
+            <!-- Container for error/info messages -->
+            <div id="message-container" class="px-4"></div>
+
+            <div class="flex justify-between items-center px-4 py-2">
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input
+                  class="form-checkbox h-4 w-4 rounded bg-gray-700 border-gray-600 text-primary focus:ring-primary focus:ring-offset-background-dark"
+                  type="checkbox" />
+                <span class="text-sm text-gray-300">Lembrar-me</span>
+              </label>
+              <a class="text-sm text-primary/80 hover:text-primary hover:underline" href="#">Esqueceu a
+                senha?</a>
+            </div>
+            <div class="w-full px-4 pt-6 pb-2">
+              <!-- Change button type to "submit" -->
+              <button id="login-button" type="submit"
+                class="flex w-full items-center justify-center rounded-lg bg-primary h-12 text-base font-bold text-white transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background-dark">
+                Entrar
+              </button>
+            </div>
+          </form>
+
+          <div class="flex items-center justify-center gap-2 p-4 mt-4">
+            <span class="material-symbols-outlined text-sm text-gray-500">lock</span>
+            <p class="text-xs text-gray-500 text-center">Acesso Restrito e Monitorado</p>
+          </div>
+          <div class="w-full px-4 py-6 mt-auto">
+            <p class="text-xs text-gray-600 text-center">© 2025 1° Batalhão de Polícia de Choque "Tobias de
+              Aguiar". Todos os direitos reservados.</p>
+            <p class="text-xs text-gray-600 text-center mt-1">Este documento fornece informações fictícias
+              exclusivamente destinadas ao uso do jogo Grand Theft Auto V (RP)</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase SDKs -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+
+    // --- Sua Configuração do Firebase ---
+    const firebaseConfig = {
+      apiKey: "",
+      authDomain: "",
+      projectId: "",
+      storageBucket: "",
+      messagingSenderId: "",
+      appId: "",
+      measurementId: ""
+    };
+    // -----------------------------------------
+
+    // Init Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    // --- Espera o DOM carregar antes de rodar o script ---
+    document.addEventListener("DOMContentLoaded", () => {
+      // Alternar visibilidade da senha
+      const passwordInput = document.getElementById('password-input');
+      const togglePasswordButton = document.getElementById('toggle-password-button');
+      const toggleIcon = togglePasswordButton.querySelector('span');
+
+      if (passwordInput && togglePasswordButton && toggleIcon) {
+        togglePasswordButton.addEventListener('click', () => {
+          const isPassword = passwordInput.type === 'password';
+          passwordInput.type = isPassword ? 'text' : 'password';
+          toggleIcon.textContent = isPassword ? 'visibility_off' : 'visibility';
+        });
+      }
+
+      // Formulário de Login
+      const loginForm = document.getElementById('login-form');
+      const idFuncionalInput = document.getElementById('id-funcional-input');
+      const loginButton = document.getElementById('login-button');
+      const messageContainer = document.getElementById('message-container');
+
+      const showMessage = (message, type) => {
+        let bgColor = 'bg-red-500'; // erro
+        if (type === 'info') bgColor = 'bg-blue-500';
+        if (type === 'success') bgColor = 'bg-green-500';
+        messageContainer.innerHTML = `<div class="${bgColor} text-white p-3 rounded-lg text-sm">${message}</div>`;
+      };
+
+      if (loginForm && idFuncionalInput && passwordInput) {
+        loginForm.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const idFuncional = idFuncionalInput.value;
+          const password = passwordInput.value;
+
+          // Constroi o email como o Firebase Auth espera
+          const email = `${idFuncional}@rota.mil`;
+
+          showMessage("Autenticando...", "info");
+          loginButton.disabled = true;
+          loginButton.textContent = "Entrando...";
+
+          try {
+            const userCredential = await signInWithEmailAndPassword(auth, email, password);
+
+            // Sucesso! Agora redirecionamos.
+            console.log("Login successful:", userCredential.user.uid);
+            showMessage("Login bem-sucedido! Redirecionando...", "success");
+
+            setTimeout(() => {
+              window.location.href = "rota_dashboard.html";
+            }, 500);
+
+          } catch (error) {
+            console.error("Login failed:", error.code, error.message);
+            let friendlyMessage = "ID Funcional ou Senha incorretos.";
+            if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
+              friendlyMessage = "ID Funcional ou Senha incorretos.";
+            } else if (error.code === 'auth/invalid-email') {
+              friendlyMessage = "Formato do ID Funcional inválido.";
+            } else if (error.code === 'auth/missing-password') {
+              friendlyMessage = "Por favor, digite sua senha.";
+            } else if (error.code === 'auth/network-request-failed') {
+              friendlyMessage = "Erro de rede. Verifique sua conexão.";
+            }
+            showMessage(friendlyMessage, "error");
+            loginButton.disabled = false;
+            loginButton.textContent = "Entrar";
+          }
+        });
+      }
+    }); // <-- Fim do DOMContentLoaded listener
+  </script>
+</body>
+
+</html>

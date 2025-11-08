@@ -1,0 +1,1774 @@
+<!DOCTYPE html>
+<html class="dark" lang="pt-BR">
+
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <title>Painel Operacional - 1º BPChq ROTA</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com" rel="preconnect" />
+  <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700;800;900&amp;display=swap"
+    rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#fbbf24", // Gold/Yellow
+            "background-light": "#f1f5f9",
+            "background-dark": "#1e293b", // Deep Navy Blue
+            "card-light": "#ffffff",
+            "card-dark": "#283447",
+            "border-light": "#e2e8f0",
+            "border-dark": "#3b4754",
+            "text-light-primary": "#1e293b",
+            "text-dark-primary": "#f1f5f9",
+            "text-light-secondary": "#64748b",
+            "text-dark-secondary": "#9ca3af",
+            "danger": "#dc2626",
+            "success": "#22c55e"
+          },
+          fontFamily: {
+            "display": ["Public Sans", "sans-serif"]
+          },
+          borderRadius: {
+            "DEFAULT": "0.5rem",
+            "lg": "0.75rem",
+            "xl": "1rem",
+            "full": "9999px"
+          },
+        },
+      },
+    }
+  </script>
+  <style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      font-size: 24px;
+    }
+
+    /* Overlay de Carregamento */
+    #loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(30, 41, 59, 0.8);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      color: white;
+      font-size: 1.2rem;
+    }
+  </style>
+</head>
+
+<body
+  class="bg-background-light dark:bg-background-dark font-display text-text-light-primary dark:text-text-dark-primary">
+
+  <div id="loading-overlay">
+    <p>Carregando dados...</p>
+  </div>
+
+  <div class="relative flex min-h-screen w-full">
+    <aside
+      class="flex h-screen w-64 flex-col bg-card-light dark:bg-card-dark border-r border-border-light dark:border-border-dark sticky top-0">
+      <div class="flex h-full flex-col justify-between p-4">
+        <div class="flex flex-col gap-4">
+          <div class="flex items-center gap-3 p-2">
+            <div
+              class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 bg-background-light dark:bg-background-dark flex items-center justify-center font-bold"
+              id="user-avatar">
+              OB
+            </div>
+            <div class="flex flex-col">
+              <h1 id="user-name"
+                class="text-text-light-primary dark:text-text-dark-primary text-base font-bold leading-normal">
+                Oficial...</h1>
+              <p id="user-id"
+                class="text-text-light-secondary dark:text-text-dark-secondary text-sm font-normal leading-normal">
+                ID: ...</p>
+            </div>
+          </div>
+          <nav class="flex flex-col gap-2 mt-4" id="main-nav">
+            <a id="nav-dashboard"
+              class="flex items-center gap-3 px-3 py-2 rounded-lg bg-primary/20 text-primary font-bold" href="#">
+              <span class="material-symbols-outlined">dashboard</span>
+              <p class="text-sm leading-normal">Dashboard</p>
+            </a>
+
+            <a id="nav-reports"
+              class="flex items-center gap-3 px-3 py-2 rounded-lg text-text-light-secondary dark:text-text-dark-secondary hover:bg-primary/10 hover:text-primary transition-colors font-medium"
+              href="#">
+              <span class="material-symbols-outlined">description</span>
+              <p class="text-sm leading-normal">Relatórios</p>
+            </a>
+
+            <a id="nav-incidents"
+              class="flex items-center gap-3 px-3 py-2 rounded-lg text-text-light-secondary dark:text-text-dark-secondary hover:bg-primary/10 hover:text-primary transition-colors font-medium"
+              href="#">
+              <span class="material-symbols-outlined">emergency_home</span>
+              <p class="text-sm leading-normal">Ocorrências</p>
+            </a>
+            <a id="nav-analysis"
+              class="flex items-center gap-3 px-3 py-2 rounded-lg text-text-light-secondary dark:text-text-dark-secondary hover:bg-primary/10 hover:text-primary transition-colors font-medium"
+              href="#">
+              <span class="material-symbols-outlined">bar_chart_4_bars</span>
+              <p class="text-sm leading-normal">Análise</p>
+            </a>
+            <a id="nav-admin"
+              class="flex items-center gap-3 px-3 py-2 rounded-lg text-text-light-secondary dark:text-text-dark-secondary hover:bg-primary/10 hover:text-primary transition-colors font-medium hidden"
+              href="#">
+              <span class="material-symbols-outlined">shield_person</span>
+              <p class="text-sm leading-normal">Administração</p>
+            </a>
+          </nav>
+        </div>
+        <div class="flex flex-col gap-1">
+          <a id="nav-settings"
+            class="flex items-center gap-3 px-3 py-2 rounded-lg text-text-light-secondary dark:text-text-dark-secondary hover:bg-primary/10 hover:text-primary transition-colors font-medium"
+            href="#">
+            <span class="material-symbols-outlined">settings</span>
+            <p class="text-sm leading-normal">Configurações</p>
+          </a>
+          <a id="logout-button"
+            class="flex items-center gap-3 px-3 py-2 rounded-lg text-text-light-secondary dark:text-text-dark-secondary hover:bg-primary/10 hover:text-primary transition-colors cursor-pointer"
+            href="#">
+            <span class="material-symbols-outlined">logout</span>
+            <p class="text-sm font-medium leading-normal">Sair</p>
+          </a>
+        </div>
+      </div>
+    </aside>
+    <main class="flex-1 overflow-y-auto">
+
+      <div class="p-6 lg:p-8" id="dashboard-view">
+        <header class="flex flex-wrap items-start justify-between gap-4 mb-6">
+          <div class="flex min-w-72 flex-col gap-2">
+            <p
+              class="text-text-light-primary dark:text-text-dark-primary text-3xl font-black leading-tight tracking-tight">
+              Painel Operacional - 1º BPChq ROTA</p>
+            <p class="text-text-light-secondary dark:text-text-dark-secondary text-base font-normal leading-normal">
+              Visão geral das métricas operacionais em tempo real.</p>
+          </div>
+          <div class="flex items-center gap-4">
+            <div id="filter-buttons" class="flex items-center gap-2">
+              <button data-filter="24h"
+                class="flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark px-3 hover:bg-primary/10 transition-colors">
+                <p class="text-text-light-secondary dark:text-text-dark-secondary text-sm font-medium leading-normal">
+                  Últimas 24h</p>
+              </button>
+              <button data-filter="7d"
+                class="flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark px-3 hover:bg-primary/10 transition-colors">
+                <p class="text-text-light-secondary dark:text-text-dark-secondary text-sm font-medium leading-normal">
+                  Últimos 7 dias</p>
+              </button>
+              <button data-filter="month"
+                class="flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-card-light dark:bg-card-dark border border-primary text-primary px-3">
+                <p class="text-sm font-semibold leading-normal">Este Mês</p>
+              </button>
+            </div>
+            <a id="new-incident-button"
+              class="flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-primary pl-4 pr-3 text-background-dark hover:bg-primary/90 transition-colors"
+              href="rota_rso.html">
+              <span class="material-symbols-outlined" style="font-size: 20px;">add_circle</span>
+              <p class="text-sm font-bold leading-normal">Novo RSO</p>
+            </a>
+          </div>
+        </header>
+        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div
+            class="flex flex-col gap-2 rounded-xl p-6 bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark">
+            <p class="text-text-light-secondary dark:text-text-dark-secondary text-base font-medium leading-normal">
+              Relatórios Operacionais</p>
+            <p id="stat-reports"
+              class="text-text-light-primary dark:text-text-dark-primary tracking-tight text-4xl font-bold leading-tight">
+              0</p>
+            <p id="stat-reports-comp" class="text-success text-sm font-medium leading-normal mt-1">+0.0% vs
+              período anterior</p>
+          </div>
+          <div
+            class="flex flex-col gap-2 rounded-xl p-6 bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark">
+            <p class="text-text-light-secondary dark:text-text-dark-secondary text-base font-medium leading-normal">
+              Total de Ocorrências</p>
+            <p id="stat-incidents"
+              class="text-text-light-primary dark:text-text-dark-primary tracking-tight text-4xl font-bold leading-tight">
+              0</p>
+            <p id="stat-incidents-comp" class="text-danger text-sm font-medium leading-normal mt-1">-0.0% vs
+              período anterior</p>
+          </div>
+          <div
+            class="flex flex-col gap-2 rounded-xl p-6 bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark">
+            <p class="text-text-light-secondary dark:text-text-dark-secondary text-base font-medium leading-normal">
+              Indivíduos Detidos</p>
+            <p id="stat-detainees"
+              class="text-text-light-primary dark:text-text-dark-primary tracking-tight text-4xl font-bold leading-tight">
+              0</p>
+            <p id="stat-detainees-comp" class="text-success text-sm font-medium leading-normal mt-1">+0.0% vs
+              período anterior</p>
+          </div>
+          <div
+            class="flex flex-col gap-2 rounded-xl p-6 bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark">
+            <p class="text-text-light-secondary dark:text-text-dark-secondary text-base font-medium leading-normal">
+              Mortes por Intervenção</p>
+            <p id="stat-deaths"
+              class="text-text-light-primary dark:text-text-dark-primary tracking-tight text-4xl font-bold leading-tight">
+              0</p>
+            <p id="stat-deaths-comp" class="text-success text-sm font-medium leading-normal mt-1">+0.0% vs
+              período anterior</p>
+          </div>
+        </section>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div class="lg:col-span-2 flex flex-col gap-6">
+            <div
+              class="bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark rounded-xl p-6">
+              <h2
+                class="text-text-light-primary dark:text-text-dark-primary text-xl font-bold leading-tight tracking-tight mb-4">
+                Relatórios por Dia (Este Mês)</h2>
+              <div
+                class="w-full h-80 bg-background-light dark:bg-background-dark rounded-lg flex items-center justify-center p-4">
+                <canvas id="incident-trend-chart"></canvas>
+              </div>
+            </div>
+            <div
+              class="bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark rounded-xl p-6">
+              <h2 id="seized-items-title"
+                class="text-text-light-primary dark:text-text-dark-primary text-xl font-bold leading-tight tracking-tight mb-4">
+                Itens Apreendidos (Este Mês)</h2>
+              <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                <div class="flex flex-col gap-1 p-4 rounded-lg bg-background-light dark:bg-background-dark">
+                  <p class="text-text-light-secondary dark:text-text-dark-secondary text-sm font-medium">
+                    Armas de Fogo</p>
+                  <p id="seized-firearms"
+                    class="text-text-light-primary dark:text-text-dark-primary text-2xl font-bold">
+                    0</p>
+                </div>
+                <div class="flex flex-col gap-1 p-4 rounded-lg bg-background-light dark:bg-background-dark">
+                  <p class="text-text-light-secondary dark:text-text-dark-secondary text-sm font-medium">
+                    Munições</p>
+                  <p id="seized-ammo" class="text-text-light-primary dark:text-text-dark-primary text-2xl font-bold">
+                    0</p>
+                </div>
+                <div class="flex flex-col gap-1 p-4 rounded-lg bg-background-light dark:bg-background-dark">
+                  <p class="text-text-light-secondary dark:text-text-dark-secondary text-sm font-medium">
+                    Narcóticos</p>
+                  <p id="seized-narcotics"
+                    class="text-text-light-primary dark:text-text-dark-primary text-2xl font-bold">
+                    0 kg</p>
+                </div>
+                <div class="flex flex-col gap-1 p-4 rounded-lg bg-background-light dark:bg-background-dark">
+                  <p class="text-text-light-secondary dark:text-text-dark-secondary text-sm font-medium">
+                    Dinheiro (BRL)</p>
+                  <p id="seized-money" class="text-text-light-primary dark:text-text-dark-primary text-2xl font-bold">
+                    R$ 0</p>
+                </div>
+                <div class="flex flex-col gap-1 p-4 rounded-lg bg-background-light dark:bg-background-dark">
+                  <p class="text-text-light-secondary dark:text-text-dark-secondary text-sm font-medium">
+                    Veículos Roubados</p>
+                  <p id="seized-vehicles"
+                    class="text-text-light-primary dark:text-text-dark-primary text-2xl font-bold">
+                    0</p>
+                </div>
+                <div class="flex flex-col gap-1 p-4 rounded-lg bg-background-light dark:bg-background-dark">
+                  <p class="text-text-light-secondary dark:text-text-dark-secondary text-sm font-medium">
+                    Outros</p>
+                  <p id="seized-other" class="text-text-light-primary dark:text-text-dark-primary text-2xl font-bold">
+                    0</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="lg:col-span-1 flex flex-col gap-6">
+            <div
+              class="bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark rounded-xl p-6">
+              <h2
+                class="text-text-light-primary dark:text-text-dark-primary text-xl font-bold leading-tight tracking-tight mb-4">
+                Ocorrências por Tipo (Este Mês)</h2>
+              <div
+                class="w-full h-64 bg-background-light dark:bg-background-dark rounded-lg flex items-center justify-center p-4">
+                <canvas id="incident-type-chart"></canvas>
+              </div>
+            </div>
+            <div
+              class="bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark rounded-xl p-6">
+              <h2
+                class="text-text-light-primary dark:text-text-dark-primary text-xl font-bold leading-tight tracking-tight mb-4">
+                Último Relatório</h2>
+              <div id="last-report-container" class="flex flex-col gap-4">
+                <div class="flex items-start gap-3">
+                  <div
+                    class="mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/20 text-primary">
+                    <span class="material-symbols-outlined">description</span>
+                  </div>
+                  <div class="flex flex-col">
+                    <p id="last-report-id" class="text-text-light-primary dark:text-text-dark-primary font-semibold">
+                      Nenhum relatório encontrado</p>
+                    <p id="last-report-officer" class="text-text-light-secondary dark:text-text-dark-secondary text-sm">
+                      Registrado por: ...</p>
+                    <p id="last-report-date" class="text-text-light-secondary dark:text-text-dark-secondary text-sm">
+                      Data: ...</p>
+                  </div>
+                </div>
+                <a class="text-center w-full text-sm font-bold text-primary hover:underline" href="#"
+                  id="view-all-reports-link">Ver todos
+                  relatórios</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="p-6 lg:p-8 hidden" id="settings-view">
+        <header class="flex flex-wrap items-start justify-between gap-4 mb-6">
+          <div class="flex min-w-72 flex-col gap-2">
+            <p
+              class="text-text-light-primary dark:text-text-dark-primary text-3xl font-black leading-tight tracking-tight">
+              Configurações da Conta</p>
+            <p class="text-text-light-secondary dark:text-text-dark-secondary text-base font-normal leading-normal">
+              Gerencie sua senha e veja suas estatísticas.</p>
+          </div>
+        </header>
+
+        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div
+            class="flex flex-col gap-2 rounded-xl p-6 bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark">
+            <p class="text-text-light-secondary dark:text-text-dark-secondary text-base font-medium leading-normal">
+              Total de Relatórios Enviados</p>
+            <p id="user-report-count"
+              class="text-text-light-primary dark:text-text-dark-primary tracking-tight text-4xl font-bold leading-tight">
+              0</p>
+            <p class="text-text-light-secondary dark:text-text-dark-secondary text-sm font-medium leading-normal mt-1">
+              Relatórios enviados por você</p>
+          </div>
+        </section>
+
+        <section class="max-w-xl">
+          <h2
+            class="text-text-light-primary dark:text-text-dark-primary text-xl font-bold leading-tight tracking-tight mb-4">
+            Mudar Senha
+          </h2>
+          <form id="update-password-form"
+            class="flex flex-col gap-4 p-6 rounded-xl bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark">
+            <label class="flex flex-col w-full">
+              <p class="text-text-light-primary dark:text-text-dark-primary text-sm font-medium leading-normal pb-2">
+                Nova Senha</p>
+              <input id="new-password" type="password"
+                class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-text-light-primary dark:text-text-dark-primary focus:outline-0 focus:ring-2 focus:ring-primary/50 border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark h-11 placeholder:text-text-light-secondary dark:placeholder:text-text-dark-secondary px-4 text-base font-normal leading-normal"
+                placeholder="Digite a nova senha (mínimo 6 caracteres)" required />
+            </label>
+            <label class="flex flex-col w-full">
+              <p class="text-text-light-primary dark:text-text-dark-primary text-sm font-medium leading-normal pb-2">
+                Confirmar Nova Senha</p>
+              <input id="confirm-password" type="password"
+                class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-text-light-primary dark:text-text-dark-primary focus:outline-0 focus:ring-2 focus:ring-primary/50 border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark h-11 placeholder:text-text-light-secondary dark:placeholder:text-text-dark-secondary px-4 text-base font-normal leading-normal"
+                placeholder="Confirme a nova senha" required />
+            </label>
+
+            <div id="password-message" class="text-sm font-medium"></div>
+
+            <div class="flex justify-end">
+              <button id="update-password-button" type="submit"
+                class="flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-primary px-4 text-background-dark hover:bg-primary/90 transition-colors">
+                <p class="text-sm font-bold leading-normal">Atualizar Senha</p>
+              </button>
+            </div>
+          </form>
+        </section>
+      </div>
+
+      <div class="p-6 lg:p-8 hidden" id="incidents-view">
+        <header class="mb-6">
+          <p
+            class="text-text-light-primary dark:text-text-dark-primary text-3xl font-black leading-tight tracking-tight">
+            Ocorrências</p>
+          <p class="text-text-light-secondary dark:text-text-dark-secondary text-base font-normal leading-normal mt-2">
+            Página em construção. Aqui você poderá ver uma lista de todas as ocorrências.</p>
+        </header>
+      </div>
+
+      <div class="p-6 lg:p-8 hidden" id="analysis-view">
+        <header class="mb-6">
+          <p
+            class="text-text-light-primary dark:text-text-dark-primary text-3xl font-black leading-tight tracking-tight">
+            Análise Detalhada</lcp>
+          <p class="text-text-light-secondary dark:text-text-dark-secondary text-base font-normal leading-normal mt-2">
+            Veja gráficos detalhados e rankings com base no filtro de período do dashboard.</p>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div class="lg:col-span-2 flex flex-col gap-6">
+            <div
+              class="bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark rounded-xl p-6">
+              <h2 id="leaderboard-title"
+                class="text-text-light-primary dark:text-text-dark-primary text-xl font-bold leading-tight tracking-tight mb-4">
+                Ranking de Relatórios (Este Mês)
+              </h2>
+              <div
+                class="w-full h-80 bg-background-light dark:bg-background-dark rounded-lg flex items-center justify-center p-4">
+                <canvas id="officer-leaderboard-chart"></canvas>
+              </div>
+            </div>
+
+            <div
+              class="bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark rounded-xl p-6">
+              <h2 id="seizures-chart-title"
+                class="text-text-light-primary dark:text-text-dark-primary text-xl font-bold leading-tight tracking-tight mb-4">
+                Apreensões por Tipo (Este Mês)
+              </h2>
+              <div
+                class="w-full h-80 bg-background-light dark:bg-background-dark rounded-lg flex items-center justify-center p-4">
+                <canvas id="seizures-bar-chart"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <div class="lg:col-span-1 flex flex-col gap-6">
+            <div
+              class="bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark rounded-xl p-6">
+              <h2
+                class="text-text-light-primary dark:text-text-dark-primary text-xl font-bold leading-tight tracking-tight mb-4">
+                Exportar Relatório
+              </h2>
+              <p class="text-text-light-secondary dark:text-text-dark-secondary text-sm mb-4">
+                Isso irá gerar uma imagem PNG com o resumo das apreensões com base no filtro de período selecionado no
+                dashboard (24h, 7d, Mês).
+              </p>
+              <button id="export-button"
+                class="flex w-full h-10 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-primary px-4 text-background-dark hover:bg-primary/90 transition-colors">
+                <span class="material-symbols-outlined" style="font-size: 20px;">download</span>
+                <p class="text-sm font-bold leading-normal">Exportar como PNG</p>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="p-6 lg:p-8 hidden" id="admin-view">
+        <header class="mb-6">
+          <p
+            class="text-text-light-primary dark:text-text-dark-primary text-3xl font-black leading-tight tracking-tight">
+            Administração</p>
+          <p class="text-text-light-secondary dark:text-text-dark-secondary text-base font-normal leading-normal mt-2">
+            Gerencie usuários e pesquise relatórios de toda a corporação.</p>
+        </header>
+
+        <div class="mb-6 border-b border-border-light dark:border-border-dark">
+          <nav class="flex -mb-px" id="admin-nav-tabs">
+            <button data-tab="admin-users-tab"
+              class="admin-tab-button whitespace-nowrap py-4 px-1 border-b-2 border-primary text-primary font-semibold text-sm">
+              Gerenciar Usuários
+            </button>
+            <button data-tab="admin-search-tab"
+              class="admin-tab-button whitespace-nowrap py-4 px-1 border-b-2 border-transparent text-text-light-secondary dark:text-text-dark-secondary hover:border-gray-300 dark:hover:border-gray-700 hover:text-text-light-primary dark:hover:text-text-dark-primary font-medium text-sm ml-8">
+              Buscar Relatórios
+            </button>
+          </nav>
+        </div>
+
+        <div id="admin-users-tab" class="admin-tab-content">
+          <div
+            class="bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark rounded-xl shadow">
+            <div class="overflow-x-auto">
+              <table class="min-w-full divide-y divide-border-light dark:divide-border-dark">
+                <thead class="bg-background-light dark:bg-background-dark">
+                  <tr>
+                    <th scope="col"
+                      class="px-6 py-3 text-left text-xs font-bold text-text-light-secondary dark:text-text-dark-secondary uppercase tracking-wider">
+                      Usuário (Email)</th>
+                    <th scope="col"
+                      class="px-6 py-3 text-left text-xs font-bold text-text-light-secondary dark:text-text-dark-secondary uppercase tracking-wider">
+                      Permissão (Role)</th>
+                    <th scope="col"
+                      class="px-6 py-3 text-right text-xs font-bold text-text-light-secondary dark:text-text-dark-secondary uppercase tracking-wider">
+                      Ações</th>
+                  </tr>
+                </thead>
+                <tbody class_="divide-y divide-border-light dark:divide-border-dark" id="admin-user-list">
+                  <tr>
+                    <td colspan="3"
+                      class="px-6 py-4 text-center text-text-light-secondary dark:text-text-dark-secondary">Carregando
+                      usuários...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div id="admin-search-tab" class="admin-tab-content hidden">
+          <div class="mb-4">
+            <input type="search" id="admin-search-input"
+              placeholder="Buscar por ID do relatório, nome do oficial ou prefixo da viatura..."
+              class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-text-light-primary dark:text-text-dark-primary focus:outline-0 focus:ring-2 focus:ring-primary/50 border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark h-11 placeholder:text-text-light-secondary dark:placeholder:text-text-dark-secondary px-4 text-base font-normal leading-normal" />
+          </div>
+          <div id="admin-search-results" class="flex flex-col gap-4">
+            <p class="text-center text-text-light-secondary dark:text-text-dark-secondary">Digite ao menos 3 caracteres
+              para iniciar a busca.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="p-6 lg:p-8 hidden" id="reports-view">
+        <header class="flex flex-wrap items-start justify-between gap-4 mb-6">
+          <div class="flex min-w-72 flex-col gap-2">
+            <p
+              class="text-text-light-primary dark:text-text-dark-primary text-3xl font-black leading-tight tracking-tight">
+              Todos os Relatórios</p>
+            <p class="text-text-light-secondary dark:text-text-dark-secondary text-base font-normal leading-normal">
+              Visualize todos os RSOs submetidos pela corporação.</p>
+          </div>
+          <a id="new-incident-button-reports-page"
+            class="flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-primary pl-4 pr-3 text-background-dark hover:bg-primary/90 transition-colors"
+            href="rota_rso.html">
+            <span class="material-symbols-outlined" style="font-size: 20px;">add_circle</span>
+            <p class="text-sm font-bold leading-normal">Novo RSO</p>
+          </a>
+        </header>
+
+        <div id="reports-list-container" class="flex flex-col gap-4">
+          <p class="text-center text-text-light-secondary dark:text-text-dark-secondary py-10">
+            Carregando relatórios...
+          </p>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <div class="fixed -left-[9999px] top-0 p-6 bg-white dark:bg-card-dark w-[600px] border border-border-dark"
+    id="export-container">
+    <div class="flex items-center gap-4 mb-4">
+      <img
+        src="https://media.discordapp.net/attachments/1406714813182247078/1406716551381389373/Simbolo_Batalhao_Amarelo.webp?ex=690460a1&is=69030f21&hm=3b5e0d63da929ff4be26095d30d6726666e2664d7c34edb37213ff6b6ba157db&=&format=webp"
+        class="h-16 w-16 object-contain" alt="Logo ROTA" />
+      <div>
+        <h2 class="text-text-light-primary dark:text-text-dark-primary text-2xl font-bold">Relatório de Apreensões</h2>
+        <p class="text-text-light-secondary dark:text-text-dark-secondary text-lg" id="export-filter-text">Período: Este
+          Mês</p>
+      </div>
+    </div>
+    <div class="grid grid-cols-2 gap-4 mt-4">
+      <div class="flex flex-col gap-1 p-4 rounded-lg bg-background-light dark:bg-background-dark">
+        <p class="text-text-light-secondary dark:text-text-dark-secondary text-sm font-medium">Armas de Fogo</p>
+        <p id="export-firearms" class="text-text-light-primary dark:text-text-dark-primary text-2xl font-bold">0</p>
+      </div>
+      <div class="flex flex-col gap-1 p-4 rounded-lg bg-background-light dark:bg-background-dark">
+        <p class="text-text-light-secondary dark:text-text-dark-secondary text-sm font-medium">Munições</p>
+        <p id="export-ammo" class="text-text-light-primary dark:text-text-dark-primary text-2xl font-bold">0</p>
+      </div>
+      <div class="flex flex-col gap-1 p-4 rounded-lg bg-background-light dark:bg-background-dark">
+        <p class="text-text-light-secondary dark:text-text-dark-secondary text-sm font-medium">Narcóticos</p>
+        <p id="export-narcotics" class="text-text-light-primary dark:text-text-dark-primary text-2xl font-bold">0 kg</p>
+      </div>
+      <div class="flex flex-col gap-1 p-4 rounded-lg bg-background-light dark:bg-background-dark">
+        <p class="text-text-light-secondary dark:text-text-dark-secondary text-sm font-medium">Dinheiro (BRL)</p>
+        <p id="export-money" class="text-text-light-primary dark:text-text-dark-primary text-2xl font-bold">R$ 0</p>
+      </div>
+      <div class="flex flex-col gap-1 p-4 rounded-lg bg-background-light dark:bg-background-dark">
+        <p class="text-text-light-secondary dark:text-text-dark-secondary text-sm font-medium">Veículos Roubados</p>
+        <p id="export-vehicles" class="text-text-light-primary dark:text-text-dark-primary text-2xl font-bold">0</p>
+      </div>
+      <div class="flex flex-col gap-1 p-4 rounded-lg bg-background-light dark:bg-background-dark">
+        <p class="text-text-light-secondary dark:text-text-dark-secondary text-sm font-medium">Outros Itens</p>
+        <p id="export-other" class="text-text-light-primary dark:text-text-dark-primary text-2xl font-bold">0</p>
+      </div>
+    </div>
+    <p class="text-text-light-secondary dark:text-text-dark-secondary text-xs mt-4">Relatório gerado em: <span
+        id="export-date"></span></p>
+  </div>
+
+  <div id="admin-user-edit-modal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-card-light dark:bg-card-dark rounded-xl shadow-lg w-full max-w-md p-6">
+      <h2 class="text-xl font-bold text-text-light-primary dark:text-text-dark-primary mb-4">Editar Usuário</h2>
+      <p class="text-sm text-text-light-secondary dark:text-text-dark-secondary mb-1">Usuário:</p>
+      <p id="modal-user-email" class="font-medium text-text-light-primary dark:text-text-dark-primary mb-4"></p>
+
+      <label class="flex flex-col w-full">
+        <p class="text-text-light-primary dark:text-text-dark-primary text-sm font-medium leading-normal pb-2">
+          Primeiro Nome
+        </p>
+        <input id="modal-user-first-name" type="text"
+          class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-text-light-primary dark:text-text-dark-primary focus:outline-0 focus:ring-2 focus:ring-primary/50 border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark h-11 placeholder:text-text-light-secondary dark:placeholder:text-text-dark-secondary px-4 text-base font-normal leading-normal"
+          placeholder="Primeiro nome do usuário" />
+      </label>
+
+      <label class="flex flex-col w-full mt-4">
+        <p class="text-text-light-primary dark:text-text-dark-primary text-sm font-medium leading-normal pb-2">
+          Sobrenome
+        </p>
+        <input id="modal-user-last-name" type="text"
+          class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-text-light-primary dark:text-text-dark-primary focus:outline-0 focus:ring-2 focus:ring-primary/50 border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark h-11 placeholder:text-text-light-secondary dark:placeholder:text-text-dark-secondary px-4 text-base font-normal leading-normal"
+          placeholder="Sobrenome do usuário" />
+      </label>
+      <label class="flex flex-col w-full mt-4">
+        <p class="text-text-light-primary dark:text-text-dark-primary text-sm font-medium leading-normal pb-2">Permissão
+          (Role)</p>
+        <select id="modal-user-role-select"
+          class="form-select flex w-full resize-none overflow-hidden rounded-lg text-text-light-primary dark:text-text-dark-primary focus:outline-0 focus:ring-2 focus:ring-primary/50 border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark h-11 placeholder:text-text-light-secondary dark:placeholder:text-text-dark-secondary p-2 text-base font-normal leading-normal">
+          <option value="oficial">Oficial</option>
+          <option value="comando">Comando</option>
+        </select>
+      </label>
+
+      <div id="modal-user-message" class="text-sm font-medium mt-4"></div>
+
+      <div class="flex justify-end gap-3 mt-6">
+        <button id="modal-user-cancel" type="button"
+          class="flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark px-4 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+          <p class="text-sm font-bold leading-normal text-text-light-primary dark:text-text-dark-primary">Cancelar</p>
+        </button>
+        <button id="modal-user-save" type="button"
+          class="flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-primary px-4 text-background-dark hover:bg-primary/90 transition-colors">
+          <p class="text-sm font-bold leading-normal">Salvar</p>
+        </button>
+      </div>
+    </div>
+  </div>
+  <div id="admin-report-detail-modal"
+    class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-card-light dark:bg-card-dark rounded-xl shadow-lg w-full max-w-3xl p-6 max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-bold text-text-light-primary dark:text-text-dark-primary">Detalhes do Relatório</h2>
+        <button id="modal-report-close"
+          class="text-text-light-secondary dark:text-text-dark-secondary hover:text-text-light-primary dark:hover:text-text-dark-primary">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <div id="modal-report-content" class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut, updatePassword } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, collection, onSnapshot, query, orderBy, doc, getDoc, getDocs, updateDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    // --- Sua Configuração do Firebase ---
+    const firebaseConfig = {
+      apiKey: "",
+      authDomain: "",
+      projectId: "",
+      storageBucket: "",
+      messagingSenderId: "",
+      appId: "",
+      measurementId: ""
+    };
+    // -----------------------------------------
+
+    // Init Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    const appId = firebaseConfig.appId || 'default-app-id';
+
+    // --- GRÁFICOS E VARIÁVEIS GLOBAIS ---
+    let loadingOverlay; // Será definido no DOMContentLoaded
+    let currentUserId = null;
+    let currentUserRole = null;
+    let incidentTypeChart = null;
+    let incidentTrendChart = null;
+    let officerLeaderboardChart = null;
+    let seizuresBarChart = null;
+
+    let allReports = [];
+    let activeFilter = 'month';
+
+    let currentStats = null;
+    let currentComparisonText = 'mês anterior';
+
+    // --- DICIONÁRIO DE TRADUÇÃO ---
+    const translationMap = {
+      officerRank: "Posto/Graduação",
+      officerFirstName: "Nome",
+      officerLastName: "Sobrenome",
+      patrolArea: "Área de Patrulha",
+      patrolPrefix: "Prefixo da Viatura",
+      teamCommander: "Comandante",
+      teamDriver: "Motorista",
+      teamAsst1: "1º Auxiliar",
+      teamAsst2: "2º Auxiliar",
+      startTime: "Início do Turno",
+      endTime: "Fim do Turno",
+      evaluation: "Avaliação da Patrulha",
+      numIncidents: "Ocorrências Atendidas",
+      numDetainees: "Indivíduos Detidos",
+      numDeaths: "Mortes por Intervenção",
+      seizedFirearms: "Armas Apreendidas",
+      seizedAmmo: "Munições Apreendidas",
+      seizedNarcotics: "Drogas Apreendidas",
+      seizedMoney: "Dinheiro Apreendido",
+      seizedVehicles: "Veículos Recuperados",
+      seizedOther: "Outros Itens Apreendidos",
+      observations: "Observações",
+      submittedByUid: "UID do Usuário",
+      submittedByEmail: "Email do Usuário",
+      reportId: "ID do Relatório",
+      status: "Status",
+      createdAt: "Data de Criação",
+      savedAt: "Data (Rascunho)"
+    };
+
+
+    // --- DEFINIÇÃO DE TODAS AS FUNÇÕES AUXILIARES PRIMEIRO ---
+
+    function createEmptyStatsObject() {
+      return {
+        reports: 0, incidents: 0, detainees: 0, deaths: 0, firearms: 0,
+        ammo: 0, narcotics: 0, money: 0, vehicles: 0, other: 0,
+        evaluationCounts: { 'Excelente': 0, 'Boa': 0, 'Perigosa': 0, 'Intervenção': 0 },
+        trendData: {}
+      };
+    }
+
+    currentStats = createEmptyStatsObject();
+
+
+    function processReportForStats(statsObject, report) {
+      if (!report.createdAt || typeof report.createdAt.toDate !== 'function') {
+        console.warn("Relatório ignorado, 'createdAt' inválido:", report);
+        return;
+      }
+      const timestamp = report.createdAt.toDate();
+      const dateString = timestamp.toISOString().split('T')[0]; // 'YYYY-MM-DD'
+
+      statsObject.reports++;
+      statsObject.incidents += parseInt(report.numIncidents) || 0;
+      statsObject.detainees += parseInt(report.numDetainees) || 0;
+      statsObject.deaths += parseInt(report.numDeaths) || 0;
+
+      const firearmsMatch = (report.seizedFirearms || "").match(/(\d+)/);
+      if (firearmsMatch) statsObject.firearms += parseInt(firearmsMatch[1]);
+
+      const ammoMatch = (report.seizedAmmo || "").match(/(\d+)/);
+      if (ammoMatch) statsObject.ammo += parseInt(ammoMatch[1]);
+
+      const narcoticsMatch = (report.seizedNarcotics || "").match(/(\d+)/);
+      if (narcoticsMatch) statsObject.narcotics += parseInt(narcoticsMatch[1]);
+
+      const moneyMatch = (report.seizedMoney || "").replace(/[^0-9,.]/g, '').replace('.', '').replace(',', '.');
+      if (moneyMatch) statsObject.money += parseFloat(moneyMatch);
+
+      const vehiclesMatch = (report.seizedVehicles || "").match(/(\d+)/);
+      if (vehiclesMatch) statsObject.vehicles += parseInt(vehiclesMatch[1]);
+
+      if (report.seizedOther && report.seizedOther.trim() !== "") statsObject.other++;
+
+      if (report.evaluation && statsObject.evaluationCounts.hasOwnProperty(report.evaluation)) {
+        statsObject.evaluationCounts[report.evaluation]++;
+      }
+
+      if (!statsObject.trendData[dateString]) statsObject.trendData[dateString] = 0;
+      statsObject.trendData[dateString]++;
+    };
+
+    function calculatePercentChange(current, previous) {
+      if (previous === 0) return current > 0 ? 100 : 0;
+      if (current === 0 && previous > 0) return -100;
+      return ((current - previous) / previous) * 100;
+    };
+
+    function updateComparisonText(element, percent, periodText) {
+      if (!element) return; // Guarda de segurança
+      if (!isFinite(percent)) percent = 0;
+      const roundedPercent = percent.toFixed(1);
+
+      let text = `+0.0% vs ${periodText}`;
+      if (percent > 0) {
+        text = `+${roundedPercent}% vs ${periodText}`;
+        element.classList.remove('text-danger');
+        element.classList.add('text-success');
+      } else if (percent < 0) {
+        text = `${roundedPercent}% vs ${periodText}`;
+        element.classList.remove('text-success');
+        element.classList.add('text-danger');
+      } else {
+        element.classList.remove('text-danger');
+        element.classList.add('text-success');
+      }
+      element.textContent = text;
+    };
+
+
+    async function setupDashboardListeners() {
+      if (!currentUserId || !appId) {
+        console.error("Missing userId or appId. Cannot setup listeners.");
+        return;
+      }
+
+      const reportsCollectionPath = `artifacts/${appId}/public/data/reports`;
+      const q = query(collection(db, reportsCollectionPath), orderBy("createdAt", "desc"));
+
+      onSnapshot(q, (querySnapshot) => {
+        console.log("Recebido snapshot dos dados...");
+        allReports = querySnapshot.docs.map(doc => doc.data()).filter(report => report.createdAt);
+        renderDashboard(); // Renderiza o dashboard
+        // A lista de relatórios é renderizada separadamente por sua própria função
+
+        if (loadingOverlay && loadingOverlay.style.display !== 'none') {
+          loadingOverlay.style.display = 'none';
+        }
+
+      }, (error) => {
+        console.error("Erro ao buscar relatórios: ", error);
+        if (loadingOverlay) {
+          loadingOverlay.innerHTML = "<p>Erro ao carregar dados. Tente recarregar a página.</p>";
+        }
+      });
+    }
+
+    function renderDashboard() {
+      const now = new Date();
+      let currentStartDate, currentEndDate, previousStartDate, previousEndDate;
+      let filterText = "período anterior";
+      let seizedTitleText = "Itens Apreendidos (Este Mês)";
+
+      if (activeFilter === 'month') {
+        currentStartDate = new Date(now.getFullYear(), now.getMonth(), 1);
+        currentEndDate = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+        previousStartDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+        previousEndDate = currentStartDate;
+        filterText = "mês anterior";
+        seizedTitleText = "Itens Apreendidos (Este Mês)";
+      } else if (activeFilter === '7d') {
+        currentEndDate = new Date(); // Agora
+        currentStartDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000); // 7 dias atrás
+        previousEndDate = currentStartDate;
+        previousStartDate = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000); // 14 dias atrás
+        filterText = "7 dias anteriores";
+        seizedTitleText = "Itens Apreendidos (Últimos 7 dias)";
+      } else if (activeFilter === '24h') {
+        currentEndDate = new Date(); // Agora
+        currentStartDate = new Date(now.getTime() - 24 * 60 * 60 * 1000); // 24h atrás
+        previousEndDate = currentStartDate;
+        previousStartDate = new Date(now.getTime() - 48 * 60 * 60 * 1000); // 48h atrás
+        filterText = "24h anteriores";
+        seizedTitleText = "Itens Apreendidos (Últimas 24h)";
+      }
+
+      currentComparisonText = filterText.charAt(0).toUpperCase() + filterText.slice(1);
+
+      // --- Processa os dados para os períodos ---
+      let currentPeriodStats = createEmptyStatsObject();
+      let previousPeriodStats = createEmptyStatsObject();
+      let thisMonthStats = createEmptyStatsObject();
+      let userReportCount = 0;
+      let officerCounts = {};
+
+      const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+      const thisMonthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+
+
+      for (const report of allReports) {
+        if (!report.createdAt || typeof report.createdAt.toDate !== 'function') {
+          continue;
+        }
+
+        const timestamp = report.createdAt.toDate();
+
+        if (report.submittedByUid === currentUserId) {
+          userReportCount++;
+        }
+
+        if (timestamp >= currentStartDate && timestamp < currentEndDate) {
+          processReportForStats(currentPeriodStats, report);
+
+          const officerName = `${report.officerFirstName || 'N/A'} ${report.officerLastName || ''}`.trim();
+          officerCounts[officerName] = (officerCounts[officerName] || 0) + 1;
+        }
+
+        if (timestamp >= previousStartDate && timestamp < previousEndDate) {
+          processReportForStats(previousPeriodStats, report);
+        }
+
+        if (timestamp >= thisMonthStart && timestamp < thisMonthEnd) {
+          processReportForStats(thisMonthStats, report);
+        }
+      }
+
+      currentStats = currentPeriodStats;
+
+      // --- ATUALIZAR A UI ---
+
+      document.getElementById('user-report-count').textContent = userReportCount.toLocaleString('pt-BR');
+
+      document.getElementById('stat-reports').textContent = currentPeriodStats.reports.toLocaleString('pt-BR');
+      document.getElementById('stat-incidents').textContent = currentPeriodStats.incidents.toLocaleString('pt-BR');
+      document.getElementById('stat-detainees').textContent = currentPeriodStats.detainees.toLocaleString('pt-BR');
+      document.getElementById('stat-deaths').textContent = currentPeriodStats.deaths.toLocaleString('pt-BR');
+
+      updateComparisonText(document.getElementById('stat-reports-comp'), calculatePercentChange(currentPeriodStats.reports, previousPeriodStats.reports), filterText);
+      updateComparisonText(document.getElementById('stat-incidents-comp'), calculatePercentChange(currentPeriodStats.incidents, previousPeriodStats.incidents), filterText);
+      updateComparisonText(document.getElementById('stat-detainees-comp'), calculatePercentChange(currentPeriodStats.detainees, previousPeriodStats.detainees), filterText);
+      updateComparisonText(document.getElementById('stat-deaths-comp'), calculatePercentChange(currentPeriodStats.deaths, previousPeriodStats.deaths), filterText);
+
+      const seizedItemsTitleEl = document.getElementById('seized-items-title');
+      if (seizedItemsTitleEl) seizedItemsTitleEl.textContent = seizedTitleText;
+
+      document.getElementById('seized-firearms').textContent = currentPeriodStats.firearms.toLocaleString('pt-BR');
+      document.getElementById('seized-ammo').textContent = currentPeriodStats.ammo.toLocaleString('pt-BR');
+      document.getElementById('seized-narcotics').textContent = `${currentPeriodStats.narcotics.toLocaleString('pt-BR')} kg`;
+      document.getElementById('seized-money').textContent = `R$ ${currentPeriodStats.money.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }).replace('R$', '')}`;
+      document.getElementById('seized-vehicles').textContent = currentPeriodStats.vehicles.toLocaleString('pt-BR');
+      document.getElementById('seized-other').textContent = currentPeriodStats.other.toLocaleString('pt-BR');
+
+      const lastReport = allReports.length > 0 ? allReports[0] : null;
+      if (lastReport) {
+        document.getElementById('last-report-id').textContent = `Relatório #${lastReport.reportId || "N/A"}`;
+        document.getElementById('last-report-officer').textContent = `Registrado por: ${lastReport.officerFirstName} ${lastReport.officerLastName}`;
+        document.getElementById('last-report-date').textContent = `Data: ${lastReport.createdAt ? lastReport.createdAt.toDate().toLocaleString('pt-BR') : 'N/A'}`;
+      } else {
+        document.getElementById('last-report-id').textContent = 'Nenhum relatório encontrado';
+        document.getElementById('last-report-officer').textContent = 'Registrado por: ...';
+        document.getElementById('last-report-date').textContent = 'Data: ...';
+      }
+
+      updateDonutChart(thisMonthStats.evaluationCounts);
+      updateTrendChart(thisMonthStats.trendData);
+
+      const sortedOfficers = Object.entries(officerCounts).sort((a, b) => b[1] - a[1]).slice(0, 10); // Top 10
+      updateLeaderboardChart(sortedOfficers);
+      updateSeizuresBarChart(currentPeriodStats);
+
+      const leaderboardTitleEl = document.getElementById('leaderboard-title');
+      if (leaderboardTitleEl) leaderboardTitleEl.textContent = `Ranking de Relatórios (${currentComparisonText})`;
+
+      const seizuresChartTitleEl = document.getElementById('seizures-chart-title');
+      if (seizuresChartTitleEl) seizuresChartTitleEl.textContent = `Apreensões por Tipo (${currentComparisonText})`;
+    }
+
+
+    function updateDonutChart(data) {
+      const ctx = document.getElementById('incident-type-chart')?.getContext('2d');
+      if (!ctx) return;
+
+      const chartData = {
+        labels: ['Excelente', 'Boa', 'Perigosa', 'Intervenção'],
+        datasets: [{
+          label: 'Ocorrências por Tipo',
+          data: [
+            data['Excelente'],
+            data['Boa'],
+            data['Perigosa'],
+            data['Intervenção']
+          ],
+          backgroundColor: ['#22c55e', '#3b82f6', '#f59e0b', '#ef4444'],
+          borderColor: '#283447',
+          borderWidth: 2,
+          hoverOffset: 4
+        }]
+      };
+
+      if (incidentTypeChart) {
+        incidentTypeChart.data = chartData;
+        incidentTypeChart.update();
+      } else {
+        incidentTypeChart = new Chart(ctx, {
+          type: 'doughnut',
+          data: chartData,
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: 'bottom',
+                labels: { color: '#9ca3af', font: { family: "'Public Sans', sans-serif" } }
+              }
+            }
+          }
+        });
+      }
+    }
+
+    function updateTrendChart(trendData) {
+      const ctx = document.getElementById('incident-trend-chart')?.getContext('2d');
+      if (!ctx) return;
+
+      const sortedDates = Object.keys(trendData).sort();
+      const chartLabels = sortedDates.map(date => new Date(date));
+      const chartDataPoints = sortedDates.map(date => trendData[date]);
+
+      const data = {
+        labels: chartLabels,
+        datasets: [{
+          label: 'Relatórios por Dia',
+          data: chartDataPoints,
+          fill: false,
+          borderColor: '#fbbf24',
+          tension: 0.1,
+          pointBackgroundColor: '#fbbf24',
+          pointRadius: 4
+        }]
+      };
+
+      if (incidentTrendChart) {
+        incidentTrendChart.data = data;
+        incidentTrendChart.update();
+      } else {
+        incidentTrendChart = new Chart(ctx, {
+          type: 'line',
+          data: data,
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              x: {
+                type: 'time',
+                time: {
+                  unit: 'day',
+                  tooltipFormat: 'dd/MM/yyyy'
+                },
+                ticks: { color: '#9ca3af' },
+                grid: { color: 'rgba(156, 163, 175, 0.1)' }
+              },
+              y: {
+                beginAtZero: true,
+                ticks: {
+                  color: '#9ca3af',
+                  stepSize: 1
+                },
+                grid: { color: 'rgba(156, 163, 175, 0.1)' }
+              }
+            },
+            plugins: {
+              legend: {
+                display: false
+              },
+              tooltip: {
+                mode: 'index',
+                intersect: false
+              }
+            }
+          }
+        });
+      }
+    }
+
+    function updateLeaderboardChart(officerData) {
+      const ctx = document.getElementById('officer-leaderboard-chart')?.getContext('2d');
+      if (!ctx) return;
+
+      const labels = officerData.map(item => item[0]);
+      const dataPoints = officerData.map(item => item[1]);
+
+      const data = {
+        labels: labels,
+        datasets: [{
+          label: 'Relatórios Enviados',
+          data: dataPoints,
+          backgroundColor: '#fbbf24',
+          borderColor: '#fbbf24',
+          borderWidth: 1
+        }]
+      };
+
+      if (officerLeaderboardChart) {
+        officerLeaderboardChart.data = data;
+        officerLeaderboardChart.update();
+      } else {
+        officerLeaderboardChart = new Chart(ctx, {
+          type: 'bar',
+          data: data,
+          options: {
+            indexAxis: 'y', // Faz o gráfico ser horizontal
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              x: {
+                beginAtZero: true,
+                ticks: { color: '#9ca3af', stepSize: 1 },
+                grid: { color: 'rgba(156, 163, 175, 0.1)' }
+              },
+              y: {
+                ticks: { color: '#9ca3af' },
+                grid: { display: false }
+              }
+            },
+            plugins: {
+              legend: {
+                display: false
+              }
+            }
+          }
+        });
+      }
+    }
+
+    function updateSeizuresBarChart(statsData) {
+      const ctx = document.getElementById('seizures-bar-chart')?.getContext('2d');
+      if (!ctx) return;
+
+      const labels = ['Armas de Fogo', 'Munições', 'Narcóticos (kg)', 'Veículos'];
+      const dataPoints = [
+        statsData.firearms,
+        statsData.ammo,
+        statsData.narcotics,
+        statsData.vehicles
+      ];
+
+      const data = {
+        labels: labels,
+        datasets: [{
+          label: 'Quantidade Apreendida',
+          data: dataPoints,
+          backgroundColor: [
+            '#ef4444', // red
+            '#f59e0b', // amber
+            '#3b82f6', // blue
+            '#22c55e'  // green
+          ],
+          borderColor: '#283447',
+          borderWidth: 1
+        }]
+      };
+
+      if (seizuresBarChart) {
+        seizuresBarChart.data = data;
+        seizuresBarChart.update();
+      } else {
+        seizuresBarChart = new Chart(ctx, {
+          type: 'bar',
+          data: data,
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              x: {
+                ticks: { color: '#9ca3af' },
+                grid: { display: false }
+              },
+              y: {
+                beginAtZero: true,
+                ticks: { color: '#9ca3af' },
+                grid: { color: 'rgba(156, 163, 175, 0.1)' }
+              }
+            },
+            plugins: {
+              legend: {
+                display: false
+              }
+            }
+          }
+        });
+      }
+    }
+
+    // --- NOVAS FUNÇÕES DA LISTA DE RELATÓRIOS ---
+    async function setupReportsListListener() {
+      if (!currentUserId || !appId) {
+        console.error("Missing userId or appId. Cannot setup listeners.");
+        return;
+      }
+
+      const reportsCollectionPath = `artifacts/${appId}/public/data/reports`;
+      const q = query(collection(db, reportsCollectionPath), orderBy("createdAt", "desc"));
+
+      // Usamos onSnapshot para que a lista se atualize se um novo relatório for adicionado
+      onSnapshot(q, (querySnapshot) => {
+        console.log("Recebido snapshot da lista de relatórios...");
+        const reports = querySnapshot.docs.map(doc => doc.data()).filter(report => report.createdAt);
+
+        renderReportsList(reports); // Passa os relatórios para a função de renderização
+
+      }, (error) => {
+        console.error("Erro ao buscar relatórios: ", error);
+        const listContainer = document.getElementById('reports-list-container');
+        if (listContainer) {
+          listContainer.innerHTML = '<p class="text-center text-danger py-10">Erro ao carregar relatórios.</p>';
+        }
+      });
+    }
+
+    function renderReportsList(reports) {
+      const listContainer = document.getElementById('reports-list-container');
+      if (!listContainer) return;
+
+      if (reports.length === 0) {
+        listContainer.innerHTML = '<p class="text-center text-text-light-secondary dark:text-text-dark-secondary py-10">Nenhum relatório encontrado.</p>';
+        return;
+      }
+
+      listContainer.innerHTML = ''; // Limpa o "carregando"
+
+      reports.forEach(report => {
+        const reportId = report.reportId || 'ID-INDISPONÍVEL';
+        const officerName = `${report.officerFirstName || 'N/A'} ${report.officerLastName || ''}`.trim();
+        const createdAt = report.createdAt ? report.createdAt.toDate().toLocaleString('pt-BR') : 'Data indisponível';
+
+        const reportElement = document.createElement('div');
+        reportElement.className = 'flex items-center gap-4 p-4 rounded-lg bg-card-dark border border-border-dark';
+
+        const iconHtml = `
+          <div class="flex-shrink-0 flex items-center justify-center size-12 rounded-full bg-primary/20 text-primary">
+            <span class="material-symbols-outlined" style="font-size: 30px;">description</span>
+          </div>
+        `;
+
+        const textHtml = `
+          <div class="flex-grow">
+            <p class="font-bold text-lg text-text-dark-primary">Relatório #${reportId}</p>
+            <p class="text-sm text-text-dark-secondary">Registrado por: ${officerName}</p>
+            <p class="text-sm text-text-dark-secondary">Data: ${createdAt}</p>
+          </div>
+        `;
+
+        reportElement.innerHTML = iconHtml + textHtml;
+        listContainer.appendChild(reportElement);
+      });
+    }
+    // --- FIM DAS NOVAS FUNÇÕES ---
+
+    // --- Funções da Aba de Admin ---
+
+    async function loadAdminView() {
+      if (currentUserRole !== 'comando') return;
+
+      // Carrega as duas abas
+      loadAdminUserList();
+      setupAdminSearch();
+    }
+
+    // Carrega a lista de usuários para gerenciamento
+    async function loadAdminUserList() {
+      const userListBody = document.getElementById('admin-user-list');
+      if (!userListBody) return;
+      userListBody.innerHTML = `<tr><td colspan="3" class="px-6 py-4 text-center text-text-light-secondary dark:text-text-dark-secondary">Carregando usuários...</td></tr>`;
+
+      try {
+        const usersCollectionPath = `artifacts/${appId}/public/data/users`;
+        const q = query(collection(db, usersCollectionPath));
+        const querySnapshot = await getDocs(q);
+
+        userListBody.innerHTML = ''; // Limpa o "carregando"
+        if (querySnapshot.empty) {
+          userListBody.innerHTML = `<tr><td colspan="3" class="px-6 py-4 text-center text-text-light-secondary dark:text-text-dark-secondary">Nenhum usuário encontrado na coleção 'users'.</td></tr>`;
+          return;
+        }
+
+        querySnapshot.forEach(docRef => {
+          const user = docRef.data();
+          const userUid = docRef.id;
+
+          const isCurrentUser = (userUid === currentUserId);
+
+          // --- INÍCIO DA MODIFICAÇÃO ---
+          // Pega os nomes (com um valor padrão caso não existam)
+          const firstName = user.firstName || '';
+          const lastName = user.lastName || '';
+          // --- FIM DA MODIFICAÇÃO ---
+
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="text-sm text-text-light-primary dark:text-text-dark-primary">${firstName} ${lastName}</div>
+              <div class="text-xs text-text-light-secondary dark:text-text-dark-secondary">${user.email || 'N/A'}</div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${user.role === 'comando' ? 'bg-primary/20 text-primary' : 'bg-gray-200 dark:bg-gray-700 text-text-light-secondary dark:text-text-dark-secondary'}">
+                ${user.role}
+              </span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+              <button data-uid="${userUid}" data-email="${user.email}" data-role="${user.role}" 
+                      data-first-name="${firstName}" data-last-name="${lastName}"
+                      class="admin-edit-user-btn text-primary hover:text-primary/80 ${isCurrentUser ? 'opacity-50 cursor-not-allowed' : ''}" 
+                      ${isCurrentUser ? 'disabled' : ''}>
+                Editar
+              </button>
+            </td>
+          `;
+          userListBody.appendChild(row);
+        });
+
+        // Adiciona listeners aos botões "Editar"
+        document.querySelectorAll('.admin-edit-user-btn').forEach(button => {
+          button.addEventListener('click', () => openUserEditModal(button.dataset));
+        });
+
+      } catch (err) {
+        console.error("Erro ao carregar lista de usuários:", err);
+        userListBody.innerHTML = `<tr><td colspan="3" class="px-6 py-4 text-center text-danger">Erro ao carregar usuários. Verifique as regras de segurança.</td></tr>`;
+      }
+    }
+
+    // Abre o modal para editar um usuário
+    function openUserEditModal(dataset) {
+      // --- INÍCIO DA MODIFICAÇÃO ---
+      // Agora extrai os nomes
+      const { uid, email, role, firstName, lastName } = dataset;
+      // --- FIM DA MODIFICAÇÃO ---
+
+      const modal = document.getElementById('admin-user-edit-modal');
+      document.getElementById('modal-user-email').textContent = email;
+      document.getElementById('modal-user-role-select').value = role;
+
+      // --- INÍCIO DA MODIFICAÇÃO ---
+      // Popula os novos campos de nome
+      document.getElementById('modal-user-first-name').value = firstName || '';
+      document.getElementById('modal-user-last-name').value = lastName || '';
+      // --- FIM DA MODIFICAÇÃO ---
+
+      document.getElementById('modal-user-message').textContent = '';
+
+      const saveButton = document.getElementById('modal-user-save');
+      const newSaveButton = saveButton.cloneNode(true);
+      saveButton.parentNode.replaceChild(newSaveButton, saveButton);
+
+      // --- INÍCIO DA MODIFICAÇÃO ---
+      // Chama a nova função de salvamento
+      newSaveButton.addEventListener('click', () => saveUserData(uid));
+      // --- FIM DA MODIFICAÇÃO ---
+
+      modal.classList.remove('hidden');
+    }
+
+    // --- INÍCIO DA MODIFICAÇÃO ---
+    // Salva os dados (role e nome) do usuário
+    async function saveUserData(uid) {
+      const modalMessage = document.getElementById('modal-user-message');
+      const saveButton = document.getElementById('modal-user-save');
+
+      // Coleta TODOS os dados do modal
+      const newRole = document.getElementById('modal-user-role-select').value;
+      const newFirstName = document.getElementById('modal-user-first-name').value;
+      const newLastName = document.getElementById('modal-user-last-name').value;
+
+      modalMessage.textContent = 'Salvando...';
+      modalMessage.className = 'text-sm font-medium text-primary';
+      saveButton.disabled = true;
+
+      try {
+        const userDocRef = doc(db, `artifacts/${appId}/public/data/users/${uid}`);
+
+        // Atualiza o documento com todos os novos campos
+        await updateDoc(userDocRef, {
+          role: newRole,
+          firstName: newFirstName,
+          lastName: newLastName
+        });
+
+        modalMessage.textContent = 'Usuário atualizado com sucesso!';
+        modalMessage.className = 'text-sm font-medium text-success';
+
+        loadAdminUserList(); // Recarrega a lista para mostrar o novo nome
+        setTimeout(() => {
+          document.getElementById('admin-user-edit-modal').classList.add('hidden');
+        }, 1500);
+
+      } catch (err) {
+        console.error("Erro ao salvar dados do usuário:", err);
+        modalMessage.textContent = 'Erro ao salvar. Verifique o console.';
+        modalMessage.className = 'text-sm font-medium text-danger';
+      } finally {
+        saveButton.disabled = false;
+      }
+    }
+    // --- FIM DA MODIFICAÇÃO ---
+
+
+    // Configura a busca de relatórios
+    function setupAdminSearch() {
+      const searchInput = document.getElementById('admin-search-input');
+      searchInput.addEventListener('input', (e) => {
+        renderAdminSearchResults(e.target.value);
+      });
+    }
+
+    // Renderiza os resultados da busca de relatórios
+    function renderAdminSearchResults(searchTerm) {
+      const resultsContainer = document.getElementById('admin-search-results');
+      if (!resultsContainer) return;
+
+      if (!searchTerm || searchTerm.length < 3) {
+        resultsContainer.innerHTML = '<p class="text-center text-text-light-secondary dark:text-text-dark-secondary">Digite ao menos 3 caracteres para iniciar a busca.</p>';
+        return;
+      }
+
+      const lowerSearchTerm = searchTerm.toLowerCase();
+      const filteredReports = allReports.filter(report => {
+        const officer = `${report.officerFirstName || ''} ${report.officerLastName || ''}`.toLowerCase();
+        const reportId = (report.reportId || '').toLowerCase();
+        const patrol = (report.patrolPrefix || '').toLowerCase();
+
+        return officer.includes(lowerSearchTerm) ||
+          reportId.includes(lowerSearchTerm) ||
+          patrol.includes(lowerSearchTerm);
+      });
+
+      if (filteredReports.length === 0) {
+        resultsContainer.innerHTML = '<p class="text-center text-text-light-secondary dark:text-text-dark-secondary">Nenhum relatório encontrado.</p>';
+        return;
+      }
+
+      resultsContainer.innerHTML = ''; // Limpa
+      filteredReports.forEach(report => {
+        const reportEl = document.createElement('div');
+        reportEl.className = 'bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark rounded-xl p-4 flex justify-between items-center';
+        reportEl.innerHTML = `
+          <div>
+            <p class="font-bold text-text-light-primary dark:text-text-dark-primary">${report.reportId || 'ID N/A'}</p>
+            <p class="text-sm text-text-light-secondary dark:text-text-dark-secondary">Oficial: ${report.officerFirstName || ''} ${report.officerLastName || ''} (${report.patrolPrefix || 'N/A'})</p>
+            <p class="text-xs text-text-light-secondary dark:text-text-dark-secondary mt-1">Data: ${report.createdAt ? report.createdAt.toDate().toLocaleString('pt-BR') : 'N/A'}</p>
+          </div>
+          <button data-report-index="${allReports.indexOf(report)}" class="admin-view-report-btn flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-primary px-3 text-background-dark hover:bg-primary/90 transition-colors text-sm font-bold">
+            Ver Detalhes
+          </button>
+        `;
+        resultsContainer.appendChild(reportEl);
+      });
+
+      // Adiciona listeners aos botões "Ver Detalhes"
+      document.querySelectorAll('.admin-view-report-btn').forEach(button => {
+        button.addEventListener('click', () => {
+          const report = allReports[parseInt(button.dataset.reportIndex)];
+          openReportDetailModal(report);
+        });
+      });
+    }
+
+    // Abre o modal com detalhes do relatório
+    function openReportDetailModal(report) {
+      const modal = document.getElementById('admin-report-detail-modal');
+      const content = document.getElementById('modal-report-content');
+
+      content.innerHTML = '';
+      const orderedKeys = [
+        "reportId", "status", "createdAt", "officerRank", "officerFirstName", "officerLastName",
+        "patrolArea", "patrolPrefix", "teamCommander", "teamDriver", "teamAsst1", "teamAsst2",
+        "startTime", "endTime", "evaluation", "numIncidents", "numDetainees", "numDeaths",
+        "seizedFirearms", "seizedAmmo", "seizedNarcotics", "seizedMoney", "seizedVehicles", "seizedOther",
+        "observations", "submittedByEmail", "submittedByUid"
+      ];
+
+      for (const key of orderedKeys) {
+        if (report.hasOwnProperty(key)) {
+          const value = report[key];
+          let displayValue = value;
+          if (value && typeof value.toDate === 'function') {
+            displayValue = value.toDate().toLocaleString('pt-BR');
+          }
+
+          const displayName = translationMap[key] || key.charAt(0).toUpperCase() + key.slice(1);
+
+          const detailEl = document.createElement('div');
+          detailEl.className = 'border-b border-border-light dark:border-border-dark pb-2';
+          detailEl.innerHTML = `
+            <p class="text-xs font-medium text-text-light-secondary dark:text-text-dark-secondary uppercase">${displayName}</p>
+            <p class="text-base text-text-light-primary dark:text-text-dark-primary">${displayValue || 'N/A'}</p>
+          `;
+          content.appendChild(detailEl);
+        }
+      }
+      modal.classList.remove('hidden');
+    }
+
+    // --- FIM DAS DEFINIÇÕES DE FUNÇÃO ---
+
+
+    // --- INÍCIO DA LÓGICA DE EXECUÇÃO ---
+    document.addEventListener('DOMContentLoaded', () => {
+
+      // --- Seletores de Elementos ---
+      loadingOverlay = document.getElementById('loading-overlay');
+
+      const filterButtons = document.querySelectorAll('#filter-buttons button');
+      const allViews = document.querySelectorAll('main > div[id$="-view"]');
+      const allNavLinks = document.querySelectorAll('#main-nav a, #nav-settings');
+      const viewAllReportsLink = document.getElementById('view-all-reports-link');
+
+      // --- Lógica de Navegação ---
+      const setView = (viewId) => {
+        allViews.forEach(view => view.classList.add('hidden'));
+
+        const viewToShow = document.getElementById(viewId);
+        if (viewToShow) viewToShow.classList.remove('hidden');
+
+        // Atualiza o hash da URL
+        window.location.hash = viewId.replace('-view', '');
+
+        const navId = `nav-${viewId.split('-')[0]}`;
+
+        allNavLinks.forEach(link => {
+          if (link.href && !link.href.endsWith('#')) return;
+
+          if (link.id === navId) {
+            link.classList.add('bg-primary/20', 'text-primary', 'font-bold');
+            link.classList.remove('text-text-light-secondary', 'dark:text-text-dark-secondary', 'font-medium');
+          } else {
+            link.classList.remove('bg-primary/20', 'text-primary', 'font-bold');
+            link.classList.add('text-text-light-secondary', 'dark:text-text-dark-secondary', 'font-medium');
+          }
+        });
+
+        if (viewId === 'admin-view' && currentUserRole === 'comando') {
+          loadAdminView();
+        }
+      };
+
+      // Lógica de deep-linking para checar o hash
+      if (window.location.hash) {
+        // Converte o hash (ex: #reports) para o ID da view (ex: reports-view)
+        const viewIdFromHash = window.location.hash.substring(1) + '-view';
+        if (document.getElementById(viewIdFromHash)) {
+          setView(viewIdFromHash);
+        } else {
+          setView('dashboard-view'); // Fallback
+        }
+      } else {
+        setView('dashboard-view'); // Visão padrão
+      }
+
+
+      // Adiciona listeners aos links de navegação
+      document.getElementById('nav-dashboard').addEventListener('click', (e) => { e.preventDefault(); setView('dashboard-view'); });
+
+      // Listener para a nova aba de relatórios
+      document.getElementById('nav-reports').addEventListener('click', (e) => { e.preventDefault(); setView('reports-view'); });
+
+      document.getElementById('nav-settings').addEventListener('click', (e) => { e.preventDefault(); setView('settings-view'); });
+      document.getElementById('nav-incidents').addEventListener('click', (e) => { e.preventDefault(); setView('incidents-view'); });
+      document.getElementById('nav-analysis').addEventListener('click', (e) => { e.preventDefault(); setView('analysis-view'); });
+      document.getElementById('nav-admin').addEventListener('click', (e) => { e.preventDefault(); setView('admin-view'); });
+
+      // Listener para o link "Ver todos relatórios" no card
+      if (viewAllReportsLink) {
+        viewAllReportsLink.addEventListener('click', (e) => { e.preventDefault(); setView('reports-view'); });
+      }
+
+      document.getElementById('logout-button').addEventListener('click', async () => {
+        try {
+          await signOut(auth);
+          console.log("User signed out.");
+          window.location.href = 'index.html';
+        } catch (error) {
+          console.error("Sign out error:", error);
+        }
+      });
+
+      // Lógica dos Filtros do Dashboard
+      filterButtons.forEach(button => {
+        button.addEventListener('click', (e) => {
+          e.preventDefault();
+          const newFilter = button.dataset.filter;
+          if (newFilter === activeFilter) return;
+          activeFilter = newFilter;
+
+          filterButtons.forEach(btn => {
+            btn.classList.remove('border-primary', 'text-primary');
+            btn.querySelector('p').classList.remove('font-semibold');
+            btn.classList.add('border-border-light', 'dark:border-border-dark');
+            btn.querySelector('p').classList.add('text-text-light-secondary', 'dark:text-text-dark-secondary', 'font-medium');
+          });
+
+          button.classList.add('border-primary', 'text-primary');
+          button.querySelector('p').classList.add('font-semibold');
+          button.classList.remove('border-border-light', 'dark:border-border-dark');
+          button.querySelector('p').classList.remove('text-text-light-secondary', 'dark:text-text-dark-secondary', 'font-medium');
+
+          renderDashboard();
+        });
+      });
+
+      // Lógica do Formulário de Mudar Senha
+      const updatePasswordForm = document.getElementById('update-password-form');
+      const newPasswordInput = document.getElementById('new-password');
+      const confirmPasswordInput = document.getElementById('confirm-password');
+      const passwordMessage = document.getElementById('password-message');
+      const updatePasswordButton = document.getElementById('update-password-button');
+
+      updatePasswordForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const newPassword = newPasswordInput.value;
+        const confirmPassword = confirmPasswordInput.value;
+
+        passwordMessage.textContent = '';
+        passwordMessage.classList.remove('text-success', 'text-danger');
+
+        if (!newPassword || newPassword.length < 6) {
+          passwordMessage.textContent = 'A senha deve ter no mínimo 6 caracteres.';
+          passwordMessage.classList.add('text-danger');
+          return;
+        }
+        if (newPassword !== confirmPassword) {
+          passwordMessage.textContent = 'As senhas não coincidem.';
+          passwordMessage.classList.add('text-danger');
+          return;
+        }
+
+        updatePasswordButton.disabled = true;
+        updatePasswordButton.querySelector('p').textContent = "Atualizando...";
+
+        try {
+          const user = auth.currentUser;
+          await updatePassword(user, newPassword);
+
+          passwordMessage.textContent = 'Senha atualizada com sucesso!';
+          passwordMessage.classList.add('text-success');
+          updatePasswordForm.reset();
+
+        } catch (error) {
+          console.error("Erro ao atualizar senha:", error);
+          let errorMsg = 'Erro ao atualizar senha.';
+          if (error.code === 'auth/requires-recent-login') {
+            errorMsg = 'Esta operação é sensível. Por favor, faça login novamente antes de mudar sua senha.';
+          } else if (error.code === 'auth/weak-password') {
+            errorMsg = 'A senha é muito fraca.';
+          }
+          passwordMessage.textContent = errorMsg;
+          passwordMessage.classList.add('text-danger');
+        } finally {
+          updatePasswordButton.disabled = false;
+          updatePasswordButton.querySelector('p').textContent = "Atualizar Senha";
+        }
+      });
+
+      // Lógica de Exportação
+      const exportButton = document.getElementById('export-button');
+      exportButton.addEventListener('click', () => {
+        const exportContainer = document.getElementById('export-container');
+
+        document.getElementById('export-filter-text').textContent = `Período: ${currentComparisonText}`;
+        document.getElementById('export-firearms').textContent = currentStats.firearms.toLocaleString('pt-BR');
+        document.getElementById('export-ammo').textContent = currentStats.ammo.toLocaleString('pt-BR');
+        document.getElementById('export-narcotics').textContent = `${currentStats.narcotics.toLocaleString('pt-BR')} kg`;
+        document.getElementById('export-money').textContent = `R$ ${currentStats.money.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }).replace('R$', '')}`;
+        document.getElementById('export-vehicles').textContent = currentStats.vehicles.toLocaleString('pt-BR');
+        document.getElementById('export-other').textContent = currentStats.other.toLocaleString('pt-BR');
+        document.getElementById('export-date').textContent = new Date().toLocaleString('pt-BR');
+
+        exportButton.disabled = true;
+        exportButton.querySelector('p').textContent = "Gerando...";
+
+        html2canvas(exportContainer, {
+          backgroundColor: document.documentElement.classList.contains('dark') ? '#283447' : '#ffffff',
+          scale: 2
+        }).then(canvas => {
+          const link = document.createElement('a');
+          link.download = `relatorio_apreensoes_${activeFilter}_${new Date().toISOString().split('T')[0]}.png`;
+          link.href = canvas.toDataURL('image/png');
+          link.click();
+
+          exportButton.disabled = false;
+          exportButton.querySelector('p').textContent = "Exportar como PNG";
+        }).catch(err => {
+          console.error("Erro ao gerar imagem:", err);
+          exportButton.disabled = false;
+          exportButton.querySelector('p').textContent = "Exportar como PNG";
+        });
+      });
+
+      // --- Lógica das Abas de Admin ---
+      const adminTabs = document.querySelectorAll('.admin-tab-button');
+      const adminTabContents = document.querySelectorAll('.admin-tab-content');
+
+      adminTabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+          adminTabs.forEach(t => {
+            t.classList.remove('border-primary', 'text-primary', 'font-semibold');
+            t.classList.add('border-transparent', 'text-text-light-secondary', 'dark:text-text-dark-secondary', 'font-medium');
+          });
+          tab.classList.add('border-primary', 'text-primary', 'font-semibold');
+          tab.classList.remove('border-transparent', 'text-text-light-secondary', 'dark:text-text-dark-secondary', 'font-medium');
+
+          adminTabContents.forEach(content => {
+            content.classList.add('hidden');
+          });
+          document.getElementById(tab.dataset.tab).classList.remove('hidden');
+        });
+      });
+
+      // Listeners dos Modais de Admin
+      document.getElementById('modal-user-cancel').addEventListener('click', () => {
+        document.getElementById('admin-user-edit-modal').classList.add('hidden');
+      });
+      document.getElementById('modal-report-close').addEventListener('click', () => {
+        document.getElementById('admin-report-detail-modal').classList.add('hidden');
+      });
+
+      // Iniciar a checagem de auth DEPOIS que o DOM está pronto
+      onAuthStateChanged(auth, async (user) => {
+        if (user && !user.isAnonymous) {
+          console.log("User is logged in:", user.uid);
+          currentUserId = user.uid;
+
+          // --- Busca a permissão e NOME do usuário ---
+          try {
+            const userDocRef = doc(db, `artifacts/${appId}/public/data/users/${user.uid}`);
+            const userDoc = await getDoc(userDocRef);
+
+            // --- INÍCIO DA MODIFICAÇÃO ---
+            let userData; // Variável para armazenar os dados do usuário
+
+            if (userDoc.exists()) {
+              // Usuário já existe, apenas lê os dados
+              userData = userDoc.data();
+              currentUserRole = userData.role;
+              console.log(`Usuário existente. Permissão: ${currentUserRole}`);
+            } else {
+              // Usuário não existe, CRIA com a permissão "oficial" e nome padrão
+              console.log("Novo usuário. Criando documento com permissão 'oficial' e nome padrão.");
+
+              const userEmail = user.email || "user@rota.mil";
+              const idFuncional = userEmail.split('@')[0];
+
+              // Define os dados do novo usuário
+              userData = {
+                email: user.email,
+                role: "oficial",
+                firstName: idFuncional, // Nome padrão é o ID
+                lastName: ""            // Sobrenome padrão é vazio
+              };
+
+              await setDoc(userDocRef, userData);
+              currentUserRole = "oficial";
+            }
+
+            // Agora, use userData para popular a sidebar
+            const userEmail = userData.email || "user@rota.mil";
+            const idFuncional = userEmail.split('@')[0];
+            const displayName = `${userData.firstName || idFuncional} ${userData.lastName || ''}`.trim();
+            const avatarText = (userData.firstName ? userData.firstName.substring(0, 2) : idFuncional.substring(0, 2)).toUpperCase();
+
+            document.getElementById('user-name').textContent = displayName;
+            document.getElementById('user-id').textContent = `ID: ${idFuncional}`;
+            document.getElementById('user-avatar').textContent = avatarText;
+
+            // --- FIM DA MODIFICAÇÃO ---
+
+
+            // Mostra a aba de admin se for "comando"
+            if (currentUserRole === 'comando') {
+              console.log("Permissão de Comando CONCEDIDA.");
+              document.getElementById('nav-admin').classList.remove('hidden');
+            }
+
+          } catch (err) {
+            console.error("Erro ao buscar/criar role do usuário:", err);
+          }
+          // ---------------------------------------------
+
+          await setupDashboardListeners(); // Configura o listener do snapshot
+
+          // Carrega os dados da lista de relatórios
+          await setupReportsListListener();
+
+        } else {
+          console.log("User is signed out, redirecting to login.");
+          window.location.href = 'index.html';
+        }
+      });
+    }); // <-- FIM do DOMContentLoaded
+
+  </script>
+</body>
+
+</html>
