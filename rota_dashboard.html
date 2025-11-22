@@ -125,6 +125,13 @@
               <span class="material-symbols-outlined">bar_chart_4_bars</span>
               <p class="text-sm leading-normal">Análise</p>
             </a>
+
+            <a id="nav-hierarchy"
+              class="flex items-center gap-3 px-3 py-2 rounded-lg text-text-light-secondary dark:text-text-dark-secondary hover:bg-primary/10 hover:text-primary transition-colors font-medium"
+              href="#">
+              <span class="material-symbols-outlined">account_tree</span>
+              <p class="text-sm leading-normal">Hierarquia</p>
+            </a>
             <a id="nav-admin"
               class="flex items-center gap-3 px-3 py-2 rounded-lg text-text-light-secondary dark:text-text-dark-secondary hover:bg-primary/10 hover:text-primary transition-colors font-medium hidden"
               href="#">
@@ -406,6 +413,7 @@
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div class="lg:col-span-2 flex flex-col gap-6">
+
             <div
               class="bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark rounded-xl p-6">
               <h2 id="leaderboard-title"
@@ -420,6 +428,22 @@
 
             <div
               class="bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark rounded-xl p-6">
+              <h2 id="hours-chart-title"
+                class="text-text-light-primary dark:text-text-dark-primary text-xl font-bold leading-tight tracking-tight mb-4">
+                Horas Patrulhadas por Oficial (Este Mês)
+              </h2>
+              <div
+                class="w-full h-80 bg-background-light dark:bg-background-dark rounded-lg flex items-center justify-center p-4">
+                <canvas id="officer-hours-chart"></canvas>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="lg:col-span-1 flex flex-col gap-6">
+
+            <div
+              class="bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark rounded-xl p-6">
               <h2 id="seizures-chart-title"
                 class="text-text-light-primary dark:text-text-dark-primary text-xl font-bold leading-tight tracking-tight mb-4">
                 Apreensões por Tipo (Este Mês)
@@ -429,9 +453,7 @@
                 <canvas id="seizures-bar-chart"></canvas>
               </div>
             </div>
-          </div>
 
-          <div class="lg:col-span-1 flex flex-col gap-6">
             <div
               class="bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark rounded-xl p-6">
               <h2
@@ -448,6 +470,7 @@
                 <p class="text-sm font-bold leading-normal">Exportar como PNG</p>
               </button>
             </div>
+
           </div>
         </div>
       </div>
@@ -539,6 +562,27 @@
             Carregando relatórios...
           </p>
         </div>
+      </div>
+
+      <div class="p-6 lg:p-8 hidden" id="hierarchy-view">
+        <header class="mb-6">
+          <p
+            class="text-text-light-primary dark:text-text-dark-primary text-3xl font-black leading-tight tracking-tight">
+            Hierarquia e Efetivo
+          </p>
+          <p class="text-text-light-secondary dark:text-text-dark-secondary text-base font-normal leading-normal mt-2">
+            Planilha de controle de promoções e efetivo do batalhão.
+          </p>
+        </header>
+
+        <section
+          class="w-full h-[80vh] bg-card-light dark:bg-card-dark rounded-xl border border-border-light dark:border-border-dark overflow-hidden">
+          <iframe
+            src="https://docs.google.com/spreadsheets/d/1gt684n7WVRjQPCThkFvjRJXhUdxloXcjoE0WcCP61CA/preview?rm=minimal&headers=false"
+            style="width: 100%; height: 100%; border: 0;" frameborder="0">
+            Carregando planilha...
+          </iframe>
+        </section>
       </div>
     </main>
   </div>
@@ -672,17 +716,22 @@
     const appId = firebaseConfig.appId || 'default-app-id';
 
     // --- GRÁFICOS E VARIÁVEIS GLOBAIS ---
-    let loadingOverlay; // Será definido no DOMContentLoaded
+    let loadingOverlay;
     let currentUserId = null;
     let currentUserRole = null;
+
+    // Gráficos
     let incidentTypeChart = null;
     let incidentTrendChart = null;
     let officerLeaderboardChart = null;
     let seizuresBarChart = null;
+    let officerHoursChart = null;
 
+    // Dados
     let allReports = [];
-    let activeFilter = 'month';
+    let allUsersMap = new Map();
 
+    let activeFilter = 'month';
     let currentStats = null;
     let currentComparisonText = 'mês anterior';
 
@@ -693,10 +742,14 @@
       officerLastName: "Sobrenome",
       patrolArea: "Área de Patrulha",
       patrolPrefix: "Prefixo da Viatura",
-      teamCommander: "Comandante",
-      teamDriver: "Motorista",
-      teamAsst1: "1º Auxiliar",
-      teamAsst2: "2º Auxiliar",
+      teamCommanderName: "Nome Comandante",
+      teamCommanderUid: "UID Comandante",
+      teamDriverName: "Nome Motorista",
+      teamDriverUid: "UID Motorista",
+      teamAsst1Name: "Nome 1º Aux",
+      teamAsst1Uid: "UID 1º Aux",
+      teamAsst2Name: "Nome 2º Aux",
+      teamAsst2Uid: "UID 2º Aux",
       startTime: "Início do Turno",
       endTime: "Fim do Turno",
       evaluation: "Avaliação da Patrulha",
@@ -717,6 +770,23 @@
       createdAt: "Data de Criação",
       savedAt: "Data (Rascunho)"
     };
+
+    async function loadAllUsersMap() {
+      const usersCollectionPath = `artifacts/${appId}/public/data/users`;
+      try {
+        const q = collection(db, usersCollectionPath);
+        const querySnapshot = await getDocs(q);
+
+        querySnapshot.forEach(doc => {
+          const data = doc.data();
+          const name = `${data.firstName || ''} ${data.lastName || ''}`.trim();
+          allUsersMap.set(doc.id, name || 'Oficial Sem Nome');
+        });
+        console.log("Mapa de usuários carregado:", allUsersMap);
+      } catch (err) {
+        console.error("Erro ao carregar mapa de usuários:", err);
+      }
+    }
 
 
     // --- DEFINIÇÃO DE TODAS AS FUNÇÕES AUXILIARES PRIMEIRO ---
@@ -739,7 +809,11 @@
         return;
       }
       const timestamp = report.createdAt.toDate();
-      const dateString = timestamp.toISOString().split('T')[0]; // 'YYYY-MM-DD'
+
+      const year = timestamp.getFullYear();
+      const month = (timestamp.getMonth() + 1).toString().padStart(2, '0');
+      const day = timestamp.getDate().toString().padStart(2, '0');
+      const dateString = `${year}-${month}-${day}`;
 
       statsObject.reports++;
       statsObject.incidents += parseInt(report.numIncidents) || 0;
@@ -778,7 +852,7 @@
     };
 
     function updateComparisonText(element, percent, periodText) {
-      if (!element) return; // Guarda de segurança
+      if (!element) return;
       if (!isFinite(percent)) percent = 0;
       const roundedPercent = percent.toFixed(1);
 
@@ -811,8 +885,7 @@
       onSnapshot(q, (querySnapshot) => {
         console.log("Recebido snapshot dos dados...");
         allReports = querySnapshot.docs.map(doc => doc.data()).filter(report => report.createdAt);
-        renderDashboard(); // Renderiza o dashboard
-        // A lista de relatórios é renderizada separadamente por sua própria função
+        renderDashboard();
 
         if (loadingOverlay && loadingOverlay.style.display !== 'none') {
           loadingOverlay.style.display = 'none';
@@ -840,17 +913,17 @@
         filterText = "mês anterior";
         seizedTitleText = "Itens Apreendidos (Este Mês)";
       } else if (activeFilter === '7d') {
-        currentEndDate = new Date(); // Agora
-        currentStartDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000); // 7 dias atrás
+        currentEndDate = new Date();
+        currentStartDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
         previousEndDate = currentStartDate;
-        previousStartDate = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000); // 14 dias atrás
+        previousStartDate = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
         filterText = "7 dias anteriores";
         seizedTitleText = "Itens Apreendidos (Últimos 7 dias)";
       } else if (activeFilter === '24h') {
-        currentEndDate = new Date(); // Agora
-        currentStartDate = new Date(now.getTime() - 24 * 60 * 60 * 1000); // 24h atrás
+        currentEndDate = new Date();
+        currentStartDate = new Date(now.getTime() - 24 * 60 * 60 * 1000);
         previousEndDate = currentStartDate;
-        previousStartDate = new Date(now.getTime() - 48 * 60 * 60 * 1000); // 48h atrás
+        previousStartDate = new Date(now.getTime() - 48 * 60 * 60 * 1000);
         filterText = "24h anteriores";
         seizedTitleText = "Itens Apreendidos (Últimas 24h)";
       }
@@ -862,7 +935,9 @@
       let previousPeriodStats = createEmptyStatsObject();
       let thisMonthStats = createEmptyStatsObject();
       let userReportCount = 0;
-      let officerCounts = {};
+
+      let reportCountsByUid = {};
+      let officerHours = {};
 
       const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
       const thisMonthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 1);
@@ -882,8 +957,38 @@
         if (timestamp >= currentStartDate && timestamp < currentEndDate) {
           processReportForStats(currentPeriodStats, report);
 
-          const officerName = `${report.officerFirstName || 'N/A'} ${report.officerLastName || ''}`.trim();
-          officerCounts[officerName] = (officerCounts[officerName] || 0) + 1;
+          if (report.submittedByUid) {
+            reportCountsByUid[report.submittedByUid] = (reportCountsByUid[report.submittedByUid] || 0) + 1;
+          }
+
+          let durationHours = 0;
+          if (report.startTime && report.endTime) {
+            try {
+              const start = new Date(report.startTime);
+              const end = new Date(report.endTime);
+              const durationMs = end - start;
+              if (durationMs > 0) {
+                durationHours = durationMs / (1000 * 60 * 60);
+              }
+            } catch (e) {
+              console.warn("Invalid start/end time in report:", report.reportId);
+            }
+          }
+
+          if (durationHours > 0) {
+            const team = [
+              report.teamCommanderUid,
+              report.teamDriverUid,
+              report.teamAsst1Uid,
+              report.teamAsst2Uid
+            ];
+
+            for (const uid of team) {
+              if (uid) {
+                officerHours[uid] = (officerHours[uid] || 0) + durationHours;
+              }
+            }
+          }
         }
 
         if (timestamp >= previousStartDate && timestamp < previousEndDate) {
@@ -897,30 +1002,24 @@
 
       currentStats = currentPeriodStats;
 
-      // --- ATUALIZAR A UI ---
-
+      // --- ATUALIZAR A UI (Dashboard) ---
       document.getElementById('user-report-count').textContent = userReportCount.toLocaleString('pt-BR');
-
       document.getElementById('stat-reports').textContent = currentPeriodStats.reports.toLocaleString('pt-BR');
       document.getElementById('stat-incidents').textContent = currentPeriodStats.incidents.toLocaleString('pt-BR');
       document.getElementById('stat-detainees').textContent = currentPeriodStats.detainees.toLocaleString('pt-BR');
       document.getElementById('stat-deaths').textContent = currentPeriodStats.deaths.toLocaleString('pt-BR');
-
       updateComparisonText(document.getElementById('stat-reports-comp'), calculatePercentChange(currentPeriodStats.reports, previousPeriodStats.reports), filterText);
       updateComparisonText(document.getElementById('stat-incidents-comp'), calculatePercentChange(currentPeriodStats.incidents, previousPeriodStats.incidents), filterText);
       updateComparisonText(document.getElementById('stat-detainees-comp'), calculatePercentChange(currentPeriodStats.detainees, previousPeriodStats.detainees), filterText);
       updateComparisonText(document.getElementById('stat-deaths-comp'), calculatePercentChange(currentPeriodStats.deaths, previousPeriodStats.deaths), filterText);
-
       const seizedItemsTitleEl = document.getElementById('seized-items-title');
       if (seizedItemsTitleEl) seizedItemsTitleEl.textContent = seizedTitleText;
-
       document.getElementById('seized-firearms').textContent = currentPeriodStats.firearms.toLocaleString('pt-BR');
       document.getElementById('seized-ammo').textContent = currentPeriodStats.ammo.toLocaleString('pt-BR');
       document.getElementById('seized-narcotics').textContent = `${currentPeriodStats.narcotics.toLocaleString('pt-BR')} kg`;
       document.getElementById('seized-money').textContent = `R$ ${currentPeriodStats.money.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }).replace('R$', '')}`;
       document.getElementById('seized-vehicles').textContent = currentPeriodStats.vehicles.toLocaleString('pt-BR');
       document.getElementById('seized-other').textContent = currentPeriodStats.other.toLocaleString('pt-BR');
-
       const lastReport = allReports.length > 0 ? allReports[0] : null;
       if (lastReport) {
         document.getElementById('last-report-id').textContent = `Relatório #${lastReport.reportId || "N/A"}`;
@@ -932,15 +1031,31 @@
         document.getElementById('last-report-date').textContent = 'Data: ...';
       }
 
+      // --- ATUALIZAR GRÁFICOS ---
       updateDonutChart(thisMonthStats.evaluationCounts);
       updateTrendChart(thisMonthStats.trendData);
 
-      const sortedOfficers = Object.entries(officerCounts).sort((a, b) => b[1] - a[1]).slice(0, 10); // Top 10
-      updateLeaderboardChart(sortedOfficers);
+      const sortedOfficers = Object.entries(reportCountsByUid)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 10);
+      const officerLabels = sortedOfficers.map(entry => allUsersMap.get(entry[0]) || 'Oficial Desconhecido');
+      const officerData = sortedOfficers.map(entry => entry[1]);
+      updateLeaderboardChart(officerLabels, officerData);
+
+      const sortedHours = Object.entries(officerHours)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 10);
+      const hourLabels = sortedHours.map(entry => allUsersMap.get(entry[0]) || 'Oficial Desconhecido');
+      const hourData = sortedHours.map(entry => entry[1].toFixed(1));
+      updateOfficerHoursChart(hourLabels, hourData);
+
       updateSeizuresBarChart(currentPeriodStats);
 
       const leaderboardTitleEl = document.getElementById('leaderboard-title');
       if (leaderboardTitleEl) leaderboardTitleEl.textContent = `Ranking de Relatórios (${currentComparisonText})`;
+
+      const hoursChartTitleEl = document.getElementById('hours-chart-title');
+      if (hoursChartTitleEl) hoursChartTitleEl.textContent = `Horas Patrulhadas (${currentComparisonText})`;
 
       const seizuresChartTitleEl = document.getElementById('seizures-chart-title');
       if (seizuresChartTitleEl) seizuresChartTitleEl.textContent = `Apreensões por Tipo (${currentComparisonText})`;
@@ -994,7 +1109,7 @@
       if (!ctx) return;
 
       const sortedDates = Object.keys(trendData).sort();
-      const chartLabels = sortedDates.map(date => new Date(date));
+      const chartLabels = sortedDates.map(date => new Date(date + 'T00:00:00'));
       const chartDataPoints = sortedDates.map(date => trendData[date]);
 
       const data = {
@@ -1053,12 +1168,9 @@
       }
     }
 
-    function updateLeaderboardChart(officerData) {
+    function updateLeaderboardChart(labels, dataPoints) {
       const ctx = document.getElementById('officer-leaderboard-chart')?.getContext('2d');
       if (!ctx) return;
-
-      const labels = officerData.map(item => item[0]);
-      const dataPoints = officerData.map(item => item[1]);
 
       const data = {
         labels: labels,
@@ -1079,7 +1191,7 @@
           type: 'bar',
           data: data,
           options: {
-            indexAxis: 'y', // Faz o gráfico ser horizontal
+            indexAxis: 'y',
             responsive: true,
             maintainAspectRatio: false,
             scales: {
@@ -1087,6 +1199,58 @@
                 beginAtZero: true,
                 ticks: { color: '#9ca3af', stepSize: 1 },
                 grid: { color: 'rgba(156, 163, 175, 0.1)' }
+              },
+              y: {
+                ticks: { color: '#9ca3af' },
+                grid: { display: false }
+              }
+            },
+            plugins: {
+              legend: {
+                display: false
+              }
+            }
+          }
+        });
+      }
+    }
+
+    function updateOfficerHoursChart(labels, dataPoints) {
+      const ctx = document.getElementById('officer-hours-chart')?.getContext('2d');
+      if (!ctx) return;
+
+      const data = {
+        labels: labels,
+        datasets: [{
+          label: 'Horas Patrulhadas',
+          data: dataPoints,
+          backgroundColor: '#3b82f6',
+          borderColor: '#3b82f6',
+          borderWidth: 1
+        }]
+      };
+
+      if (officerHoursChart) {
+        officerHoursChart.data = data;
+        officerHoursChart.update();
+      } else {
+        officerHoursChart = new Chart(ctx, {
+          type: 'bar',
+          data: data,
+          options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              x: {
+                beginAtZero: true,
+                ticks: { color: '#9ca3af' },
+                grid: { color: 'rgba(156, 163, 175, 0.1)' },
+                title: {
+                  display: true,
+                  text: 'Horas',
+                  color: '#9ca3af'
+                }
               },
               y: {
                 ticks: { color: '#9ca3af' },
@@ -1121,10 +1285,10 @@
           label: 'Quantidade Apreendida',
           data: dataPoints,
           backgroundColor: [
-            '#ef4444', // red
-            '#f59e0b', // amber
-            '#3b82f6', // blue
-            '#22c55e'  // green
+            '#ef4444',
+            '#f59e0b',
+            '#3b82f6',
+            '#22c55e'
           ],
           borderColor: '#283447',
           borderWidth: 1
@@ -1162,23 +1326,19 @@
       }
     }
 
-    // --- NOVAS FUNÇÕES DA LISTA DE RELATÓRIOS ---
+    // --- Funções da Lista de Relatórios ---
     async function setupReportsListListener() {
       if (!currentUserId || !appId) {
         console.error("Missing userId or appId. Cannot setup listeners.");
         return;
       }
-
       const reportsCollectionPath = `artifacts/${appId}/public/data/reports`;
       const q = query(collection(db, reportsCollectionPath), orderBy("createdAt", "desc"));
 
-      // Usamos onSnapshot para que a lista se atualize se um novo relatório for adicionado
       onSnapshot(q, (querySnapshot) => {
         console.log("Recebido snapshot da lista de relatórios...");
         const reports = querySnapshot.docs.map(doc => doc.data()).filter(report => report.createdAt);
-
-        renderReportsList(reports); // Passa os relatórios para a função de renderização
-
+        renderReportsList(reports);
       }, (error) => {
         console.error("Erro ao buscar relatórios: ", error);
         const listContainer = document.getElementById('reports-list-container');
@@ -1197,7 +1357,7 @@
         return;
       }
 
-      listContainer.innerHTML = ''; // Limpa o "carregando"
+      listContainer.innerHTML = '';
 
       reports.forEach(report => {
         const reportId = report.reportId || 'ID-INDISPONÍVEL';
@@ -1225,19 +1385,15 @@
         listContainer.appendChild(reportElement);
       });
     }
-    // --- FIM DAS NOVAS FUNÇÕES ---
+    // --- Fim Funções Lista de Relatórios ---
 
     // --- Funções da Aba de Admin ---
-
     async function loadAdminView() {
       if (currentUserRole !== 'comando') return;
-
-      // Carrega as duas abas
       loadAdminUserList();
       setupAdminSearch();
     }
 
-    // Carrega a lista de usuários para gerenciamento
     async function loadAdminUserList() {
       const userListBody = document.getElementById('admin-user-list');
       if (!userListBody) return;
@@ -1248,7 +1404,7 @@
         const q = query(collection(db, usersCollectionPath));
         const querySnapshot = await getDocs(q);
 
-        userListBody.innerHTML = ''; // Limpa o "carregando"
+        userListBody.innerHTML = '';
         if (querySnapshot.empty) {
           userListBody.innerHTML = `<tr><td colspan="3" class="px-6 py-4 text-center text-text-light-secondary dark:text-text-dark-secondary">Nenhum usuário encontrado na coleção 'users'.</td></tr>`;
           return;
@@ -1257,14 +1413,9 @@
         querySnapshot.forEach(docRef => {
           const user = docRef.data();
           const userUid = docRef.id;
-
           const isCurrentUser = (userUid === currentUserId);
-
-          // --- INÍCIO DA MODIFICAÇÃO ---
-          // Pega os nomes (com um valor padrão caso não existam)
           const firstName = user.firstName || '';
           const lastName = user.lastName || '';
-          // --- FIM DA MODIFICAÇÃO ---
 
           const row = document.createElement('tr');
           row.innerHTML = `
@@ -1289,7 +1440,6 @@
           userListBody.appendChild(row);
         });
 
-        // Adiciona listeners aos botões "Editar"
         document.querySelectorAll('.admin-edit-user-btn').forEach(button => {
           button.addEventListener('click', () => openUserEditModal(button.dataset));
         });
@@ -1300,44 +1450,24 @@
       }
     }
 
-    // Abre o modal para editar um usuário
     function openUserEditModal(dataset) {
-      // --- INÍCIO DA MODIFICAÇÃO ---
-      // Agora extrai os nomes
       const { uid, email, role, firstName, lastName } = dataset;
-      // --- FIM DA MODIFICAÇÃO ---
-
       const modal = document.getElementById('admin-user-edit-modal');
       document.getElementById('modal-user-email').textContent = email;
       document.getElementById('modal-user-role-select').value = role;
-
-      // --- INÍCIO DA MODIFICAÇÃO ---
-      // Popula os novos campos de nome
       document.getElementById('modal-user-first-name').value = firstName || '';
       document.getElementById('modal-user-last-name').value = lastName || '';
-      // --- FIM DA MODIFICAÇÃO ---
-
       document.getElementById('modal-user-message').textContent = '';
-
       const saveButton = document.getElementById('modal-user-save');
       const newSaveButton = saveButton.cloneNode(true);
       saveButton.parentNode.replaceChild(newSaveButton, saveButton);
-
-      // --- INÍCIO DA MODIFICAÇÃO ---
-      // Chama a nova função de salvamento
       newSaveButton.addEventListener('click', () => saveUserData(uid));
-      // --- FIM DA MODIFICAÇÃO ---
-
       modal.classList.remove('hidden');
     }
 
-    // --- INÍCIO DA MODIFICAÇÃO ---
-    // Salva os dados (role e nome) do usuário
     async function saveUserData(uid) {
       const modalMessage = document.getElementById('modal-user-message');
       const saveButton = document.getElementById('modal-user-save');
-
-      // Coleta TODOS os dados do modal
       const newRole = document.getElementById('modal-user-role-select').value;
       const newFirstName = document.getElementById('modal-user-first-name').value;
       const newLastName = document.getElementById('modal-user-last-name').value;
@@ -1348,8 +1478,6 @@
 
       try {
         const userDocRef = doc(db, `artifacts/${appId}/public/data/users/${uid}`);
-
-        // Atualiza o documento com todos os novos campos
         await updateDoc(userDocRef, {
           role: newRole,
           firstName: newFirstName,
@@ -1359,7 +1487,9 @@
         modalMessage.textContent = 'Usuário atualizado com sucesso!';
         modalMessage.className = 'text-sm font-medium text-success';
 
-        loadAdminUserList(); // Recarrega a lista para mostrar o novo nome
+        allUsersMap.set(uid, `${newFirstName} ${newLastName}`.trim());
+        loadAdminUserList();
+
         setTimeout(() => {
           document.getElementById('admin-user-edit-modal').classList.add('hidden');
         }, 1500);
@@ -1372,10 +1502,7 @@
         saveButton.disabled = false;
       }
     }
-    // --- FIM DA MODIFICAÇÃO ---
 
-
-    // Configura a busca de relatórios
     function setupAdminSearch() {
       const searchInput = document.getElementById('admin-search-input');
       searchInput.addEventListener('input', (e) => {
@@ -1383,7 +1510,6 @@
       });
     }
 
-    // Renderiza os resultados da busca de relatórios
     function renderAdminSearchResults(searchTerm) {
       const resultsContainer = document.getElementById('admin-search-results');
       if (!resultsContainer) return;
@@ -1409,7 +1535,7 @@
         return;
       }
 
-      resultsContainer.innerHTML = ''; // Limpa
+      resultsContainer.innerHTML = '';
       filteredReports.forEach(report => {
         const reportEl = document.createElement('div');
         reportEl.className = 'bg-card-light dark:bg-card-dark border border-border-light dark:border-border-dark rounded-xl p-4 flex justify-between items-center';
@@ -1426,7 +1552,6 @@
         resultsContainer.appendChild(reportEl);
       });
 
-      // Adiciona listeners aos botões "Ver Detalhes"
       document.querySelectorAll('.admin-view-report-btn').forEach(button => {
         button.addEventListener('click', () => {
           const report = allReports[parseInt(button.dataset.reportIndex)];
@@ -1435,15 +1560,18 @@
       });
     }
 
-    // Abre o modal com detalhes do relatório
     function openReportDetailModal(report) {
       const modal = document.getElementById('admin-report-detail-modal');
       const content = document.getElementById('modal-report-content');
-
       content.innerHTML = '';
+
       const orderedKeys = [
         "reportId", "status", "createdAt", "officerRank", "officerFirstName", "officerLastName",
-        "patrolArea", "patrolPrefix", "teamCommander", "teamDriver", "teamAsst1", "teamAsst2",
+        "patrolArea", "patrolPrefix",
+        "teamCommanderName", "teamCommanderUid",
+        "teamDriverName", "teamDriverUid",
+        "teamAsst1Name", "teamAsst1Uid",
+        "teamAsst2Name", "teamAsst2Uid",
         "startTime", "endTime", "evaluation", "numIncidents", "numDetainees", "numDeaths",
         "seizedFirearms", "seizedAmmo", "seizedNarcotics", "seizedMoney", "seizedVehicles", "seizedOther",
         "observations", "submittedByEmail", "submittedByUid"
@@ -1456,7 +1584,6 @@
           if (value && typeof value.toDate === 'function') {
             displayValue = value.toDate().toLocaleString('pt-BR');
           }
-
           const displayName = translationMap[key] || key.charAt(0).toUpperCase() + key.slice(1);
 
           const detailEl = document.createElement('div');
@@ -1470,16 +1597,13 @@
       }
       modal.classList.remove('hidden');
     }
-
-    // --- FIM DAS DEFINIÇÕES DE FUNÇÃO ---
+    // --- FIM DAS FUNÇÕES DE ADMIN ---
 
 
     // --- INÍCIO DA LÓGICA DE EXECUÇÃO ---
     document.addEventListener('DOMContentLoaded', () => {
 
-      // --- Seletores de Elementos ---
       loadingOverlay = document.getElementById('loading-overlay');
-
       const filterButtons = document.querySelectorAll('#filter-buttons button');
       const allViews = document.querySelectorAll('main > div[id$="-view"]');
       const allNavLinks = document.querySelectorAll('#main-nav a, #nav-settings');
@@ -1488,18 +1612,12 @@
       // --- Lógica de Navegação ---
       const setView = (viewId) => {
         allViews.forEach(view => view.classList.add('hidden'));
-
         const viewToShow = document.getElementById(viewId);
         if (viewToShow) viewToShow.classList.remove('hidden');
-
-        // Atualiza o hash da URL
         window.location.hash = viewId.replace('-view', '');
-
         const navId = `nav-${viewId.split('-')[0]}`;
-
         allNavLinks.forEach(link => {
           if (link.href && !link.href.endsWith('#')) return;
-
           if (link.id === navId) {
             link.classList.add('bg-primary/20', 'text-primary', 'font-bold');
             link.classList.remove('text-text-light-secondary', 'dark:text-text-dark-secondary', 'font-medium');
@@ -1508,42 +1626,38 @@
             link.classList.add('text-text-light-secondary', 'dark:text-text-dark-secondary', 'font-medium');
           }
         });
-
         if (viewId === 'admin-view' && currentUserRole === 'comando') {
           loadAdminView();
         }
       };
 
-      // Lógica de deep-linking para checar o hash
       if (window.location.hash) {
-        // Converte o hash (ex: #reports) para o ID da view (ex: reports-view)
         const viewIdFromHash = window.location.hash.substring(1) + '-view';
         if (document.getElementById(viewIdFromHash)) {
           setView(viewIdFromHash);
         } else {
-          setView('dashboard-view'); // Fallback
+          setView('dashboard-view');
         }
       } else {
-        setView('dashboard-view'); // Visão padrão
+        setView('dashboard-view');
       }
-
 
       // Adiciona listeners aos links de navegação
       document.getElementById('nav-dashboard').addEventListener('click', (e) => { e.preventDefault(); setView('dashboard-view'); });
-
-      // Listener para a nova aba de relatórios
       document.getElementById('nav-reports').addEventListener('click', (e) => { e.preventDefault(); setView('reports-view'); });
-
       document.getElementById('nav-settings').addEventListener('click', (e) => { e.preventDefault(); setView('settings-view'); });
       document.getElementById('nav-incidents').addEventListener('click', (e) => { e.preventDefault(); setView('incidents-view'); });
       document.getElementById('nav-analysis').addEventListener('click', (e) => { e.preventDefault(); setView('analysis-view'); });
       document.getElementById('nav-admin').addEventListener('click', (e) => { e.preventDefault(); setView('admin-view'); });
 
-      // Listener para o link "Ver todos relatórios" no card
+      // Listener para o link de Hierarquia
+      document.getElementById('nav-hierarchy').addEventListener('click', (e) => { e.preventDefault(); setView('hierarchy-view'); });
+
       if (viewAllReportsLink) {
         viewAllReportsLink.addEventListener('click', (e) => { e.preventDefault(); setView('reports-view'); });
       }
 
+      // Botão de Logout
       document.getElementById('logout-button').addEventListener('click', async () => {
         try {
           await signOut(auth);
@@ -1561,19 +1675,16 @@
           const newFilter = button.dataset.filter;
           if (newFilter === activeFilter) return;
           activeFilter = newFilter;
-
           filterButtons.forEach(btn => {
             btn.classList.remove('border-primary', 'text-primary');
             btn.querySelector('p').classList.remove('font-semibold');
             btn.classList.add('border-border-light', 'dark:border-border-dark');
             btn.querySelector('p').classList.add('text-text-light-secondary', 'dark:text-text-dark-secondary', 'font-medium');
           });
-
           button.classList.add('border-primary', 'text-primary');
           button.querySelector('p').classList.add('font-semibold');
           button.classList.remove('border-border-light', 'dark:border-border-dark');
           button.querySelector('p').classList.remove('text-text-light-secondary', 'dark:text-text-dark-secondary', 'font-medium');
-
           renderDashboard();
         });
       });
@@ -1589,10 +1700,8 @@
         e.preventDefault();
         const newPassword = newPasswordInput.value;
         const confirmPassword = confirmPasswordInput.value;
-
         passwordMessage.textContent = '';
         passwordMessage.classList.remove('text-success', 'text-danger');
-
         if (!newPassword || newPassword.length < 6) {
           passwordMessage.textContent = 'A senha deve ter no mínimo 6 caracteres.';
           passwordMessage.classList.add('text-danger');
@@ -1603,18 +1712,14 @@
           passwordMessage.classList.add('text-danger');
           return;
         }
-
         updatePasswordButton.disabled = true;
         updatePasswordButton.querySelector('p').textContent = "Atualizando...";
-
         try {
           const user = auth.currentUser;
           await updatePassword(user, newPassword);
-
           passwordMessage.textContent = 'Senha atualizada com sucesso!';
           passwordMessage.classList.add('text-success');
           updatePasswordForm.reset();
-
         } catch (error) {
           console.error("Erro ao atualizar senha:", error);
           let errorMsg = 'Erro ao atualizar senha.';
@@ -1635,7 +1740,6 @@
       const exportButton = document.getElementById('export-button');
       exportButton.addEventListener('click', () => {
         const exportContainer = document.getElementById('export-container');
-
         document.getElementById('export-filter-text').textContent = `Período: ${currentComparisonText}`;
         document.getElementById('export-firearms').textContent = currentStats.firearms.toLocaleString('pt-BR');
         document.getElementById('export-ammo').textContent = currentStats.ammo.toLocaleString('pt-BR');
@@ -1644,10 +1748,8 @@
         document.getElementById('export-vehicles').textContent = currentStats.vehicles.toLocaleString('pt-BR');
         document.getElementById('export-other').textContent = currentStats.other.toLocaleString('pt-BR');
         document.getElementById('export-date').textContent = new Date().toLocaleString('pt-BR');
-
         exportButton.disabled = true;
         exportButton.querySelector('p').textContent = "Gerando...";
-
         html2canvas(exportContainer, {
           backgroundColor: document.documentElement.classList.contains('dark') ? '#283447' : '#ffffff',
           scale: 2
@@ -1656,7 +1758,6 @@
           link.download = `relatorio_apreensoes_${activeFilter}_${new Date().toISOString().split('T')[0]}.png`;
           link.href = canvas.toDataURL('image/png');
           link.click();
-
           exportButton.disabled = false;
           exportButton.querySelector('p').textContent = "Exportar como PNG";
         }).catch(err => {
@@ -1666,10 +1767,9 @@
         });
       });
 
-      // --- Lógica das Abas de Admin ---
+      // Lógica das Abas de Admin
       const adminTabs = document.querySelectorAll('.admin-tab-button');
       const adminTabContents = document.querySelectorAll('.admin-tab-content');
-
       adminTabs.forEach(tab => {
         tab.addEventListener('click', () => {
           adminTabs.forEach(t => {
@@ -1678,7 +1778,6 @@
           });
           tab.classList.add('border-primary', 'text-primary', 'font-semibold');
           tab.classList.remove('border-transparent', 'text-text-light-secondary', 'dark:text-text-dark-secondary', 'font-medium');
-
           adminTabContents.forEach(content => {
             content.classList.add('hidden');
           });
@@ -1694,58 +1793,46 @@
         document.getElementById('admin-report-detail-modal').classList.add('hidden');
       });
 
-      // Iniciar a checagem de auth DEPOIS que o DOM está pronto
+      // Iniciar a checagem de auth
       onAuthStateChanged(auth, async (user) => {
         if (user && !user.isAnonymous) {
           console.log("User is logged in:", user.uid);
           currentUserId = user.uid;
 
-          // --- Busca a permissão e NOME do usuário ---
+          await loadAllUsersMap();
+
           try {
             const userDocRef = doc(db, `artifacts/${appId}/public/data/users/${user.uid}`);
             const userDoc = await getDoc(userDocRef);
-
-            // --- INÍCIO DA MODIFICAÇÃO ---
-            let userData; // Variável para armazenar os dados do usuário
+            let userData;
 
             if (userDoc.exists()) {
-              // Usuário já existe, apenas lê os dados
               userData = userDoc.data();
               currentUserRole = userData.role;
               console.log(`Usuário existente. Permissão: ${currentUserRole}`);
             } else {
-              // Usuário não existe, CRIA com a permissão "oficial" e nome padrão
               console.log("Novo usuário. Criando documento com permissão 'oficial' e nome padrão.");
-
               const userEmail = user.email || "user@rota.mil";
               const idFuncional = userEmail.split('@')[0];
-
-              // Define os dados do novo usuário
               userData = {
                 email: user.email,
                 role: "oficial",
-                firstName: idFuncional, // Nome padrão é o ID
-                lastName: ""            // Sobrenome padrão é vazio
+                firstName: idFuncional,
+                lastName: ""
               };
-
               await setDoc(userDocRef, userData);
               currentUserRole = "oficial";
+              allUsersMap.set(user.uid, `${userData.firstName} ${userData.lastName}`.trim());
             }
 
-            // Agora, use userData para popular a sidebar
-            const userEmail = userData.email || "user@rota.mil";
-            const idFuncional = userEmail.split('@')[0];
-            const displayName = `${userData.firstName || idFuncional} ${userData.lastName || ''}`.trim();
-            const avatarText = (userData.firstName ? userData.firstName.substring(0, 2) : idFuncional.substring(0, 2)).toUpperCase();
+            const displayName = allUsersMap.get(user.uid) || 'Oficial';
+            const avatarText = (displayName.substring(0, 2)).toUpperCase();
+            const idFuncional = (userData.email || "user@rota.mil").split('@')[0];
 
             document.getElementById('user-name').textContent = displayName;
             document.getElementById('user-id').textContent = `ID: ${idFuncional}`;
             document.getElementById('user-avatar').textContent = avatarText;
 
-            // --- FIM DA MODIFICAÇÃO ---
-
-
-            // Mostra a aba de admin se for "comando"
             if (currentUserRole === 'comando') {
               console.log("Permissão de Comando CONCEDIDA.");
               document.getElementById('nav-admin').classList.remove('hidden');
@@ -1754,11 +1841,8 @@
           } catch (err) {
             console.error("Erro ao buscar/criar role do usuário:", err);
           }
-          // ---------------------------------------------
 
-          await setupDashboardListeners(); // Configura o listener do snapshot
-
-          // Carrega os dados da lista de relatórios
+          await setupDashboardListeners();
           await setupReportsListListener();
 
         } else {
